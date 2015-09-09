@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>iChat.mn 1.0</title>
+  <link rel="stylesheet" type="text/css" href="components/bootstrap/dist/css/bootstrap.css">
+  <link rel="stylesheet" href="components/font-awesome/css/font-awesome.css">
+  <link rel="stylesheet" href="css/flags.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="main col-md-6 col-md-offset-3">
+    <div class="alert alert-danger" id="errors"></div>
+    <div id="login-screen">
+      <p class="lead">Welcome to iChat.mn application </p>
+      <p>Please enter your one time password to enter.</p>
+        <form class="form-inline" id="nameForm">
+          <div class="form-group">
+            <input type="text" class="form-control input-lg" placeholder="Password" id="name">
+          </div>
+          <input type="submit" name="join" id="join" value="Join" class="btn btn-primary btn-lg">
+        </form>
+      </div>
+    </div>
+
+    <div class="row" id="main-chat-screen">
+      <div class="col-md-3">
+        <ul id="rooms" class="list-group"></ul>
+        <ul id="people" class="list-group"></ul>
+      </div>
+      <div class="col-md-6">
+        <div id="conversation">
+          <ul id="msgs" class="list-unstyled"></ul>
+        </div>
+        <form id="chatForm" class="form-inline">
+          <div class="form-group">
+            <input type="text" class="form-control input-lg" placeholder="Your message" id="msg">
+          </div>
+          <input type="submit" name="send" id="send" value="Send" class="btn btn-success btn-lg">
+         <!-- <input type="button" name="start_button" id="start_button" value="Record" onclick="startButton(event)" class="btn btn-info btn-lg"> -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
+              Actions <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="#" name="uploadFile" data-toggle="modal" data-target="#uploadFile">Share file</a></li>
+              <li><a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal">Create room</a></li>
+              <li><a href="#" name="leave" id="leave">Leave current room</a></li>
+              <li><a href="#" name="disconnect" id="disconnect">Disconnect from chat</a></li>
+            </ul>
+          </div>
+        </form>
+      </div>
+       <div class="col-md-2">
+        <ul class="list-unstyled" id="updates"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal start -->
+  <div class="modal fade" id="roomModal" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="createRoomLabel">Create private room</h4>
+        </div>
+        <div class="modal-body">
+          <p>You can  create a private chat room here. Names have to be unique. </p>
+          <br>
+          <form class="form-inline" id="createRoomForm">
+            Room name :
+            <input type="text" class="form-control input-lg"  placeholder="Room name" id="createRoomName">
+            Invite user :
+            <select id="users" class="form-control input-lg">
+            </select>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
+          <button data-dismiss="modal" id="createRoomBtn" class="btn btn-success btn-lg">Create room</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal end -->
+
+  <!-- Modal start -->
+  <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="addImage" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="createRoomLabel">Select file to share</h4>
+        </div>
+        <div class="modal-body">
+          <p>You can  upload files up to 5MB. </p>
+          <br>
+          <form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
+            <input type="file" class="form-control input-lg" name="userPhoto" />
+            <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal end -->
+
+  <!-- Modal start -->
+  <div class="modal fade" id="getFileModal" tabindex="-1" role="dialog" aria-labelledby="getImage" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="createRoomLabel">Select file to share</h4>
+        </div>
+        <div class="modal-body">
+          <img src="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Modal end -->
+
+  <script src="components/jquery/dist/jquery.js"></script>
+  <script src="components/bootstrap/dist/js/bootstrap.js"></script>
+  <script src="/socket.io/socket.io.js"></script>  
+  <script src="js/client.js"></script>
+  <script src="js/delivery.js"></script>
+</body>
+</html>
