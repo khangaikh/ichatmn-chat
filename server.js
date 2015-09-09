@@ -235,11 +235,17 @@ io.sockets.on("connection", function (socket) {
 		
 		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
         
-        rows.forEach(function (row) { 
-        	username =  row.user_id;
-            console.log(row.user_id, row.key);  
-		    })  
-		});   
+        if(rows.length==0){
+        	socket.emit("exists", {msg: "The one time password is expired or wrong.", proposedName: "Wrong pass"});
+        }else{
+	        	rows.forEach(function (row) { 
+	        	username =  row.user_id;
+	            console.log(row.user_id, row.key);  
+			    })  
+			});
+        }
+
+           
 		
 		/*Checking user creditentions on openssl crypt*/
 		

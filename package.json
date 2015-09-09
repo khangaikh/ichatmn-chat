@@ -9,6 +9,7 @@
     "express": "~3.4.8",
     "multer": "^1.0.3",
     "sqlite3": "^3.0.9",
+    "delivery",
     "url": "~0.11.0",
     "node-uuid": "~1.4.1",
     "nodemon": "~1.0.13",
@@ -21,14 +22,11 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "https://github.com/satrapade/advanced-chat.git"
+    "url": "https://github.com/khangaikh/ichatmn-chat.git"
   },
-  "author": "Tamas Piros",
-  "url": "http://tamas.io",
-  "email": "me@tamas.io",
+  "author": "Khangai Khurelbaatar",
+  "url": "http://ichat.mn",
+  "email": "Khangai@alchemist.mn",
   "license": "free",
-  "bugs": {
-    "url": "https://github.com/satrapade/advanced-chat/issues"
-  },
-  "homepage": "https://github.com/satrapade/advanced-chat"
+  "homepage": "https://ichat.mn"
 }
