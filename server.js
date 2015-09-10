@@ -246,7 +246,7 @@ io.sockets.on("connection", function (socket) {
 		/*Getting user information from database*/
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 		var username="bulgaa";
 		
 		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
