@@ -173,14 +173,30 @@ io.sockets.on("connection", function (socket) {
 
 	var chat_id = 0;
 	var delivery = dl.listen(socket);
+	var secrets = require('secrets.js');
 
 	delivery.on('receive.success',function(file){
+
+
+
 		fs.writeFile(file.name,file.buffer, function(err){
-		  if(err){
-		    console.log('File could not be saved.');
-		  }else{
-		    console.log('File saved.');
-		  };
+			
+			var sqlite3 = require('sqlite3').verbose();
+			var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+			// split into 10 shares with a threshold of 5
+			var shares = secrets.share(file.buffer, 10, 5); 
+
+			for(var i=0; i<shares.length; i++){
+
+			}
+
+			db.close();
+
+		  	if(err){
+		    	console.log('File could not be saved.');
+		  	}else{
+		    	console.log('File saved.');
+		  	};
 		});
 	});
 
@@ -239,11 +255,11 @@ io.sockets.on("connection", function (socket) {
         	socket.emit("exists", {msg: "The one time password is expired or wrong.", proposedName: "Wrong pass"});
         }else{
 	        	rows.forEach(function (row) { 
-	        	username =  row.user_id;
-	            console.log(row.user_id, row.key);  
+	        		username =  row.user_id;
+	            	console.log(row.user_id, row.key);  
 			    })  
-			});
-        }
+			}
+        });
 
            
 		
