@@ -174,23 +174,37 @@ io.sockets.on("connection", function (socket) {
 	var chat_id = 0;
 	var delivery = dl.listen(socket);
 	var secrets = require('secrets.js');
+	var StringDecoder = require('string_decoder').StringDecoder;
+	var decoder = new StringDecoder('utf8');
 
 	delivery.on('receive.success',function(file){
-
-
-
+		var params = file.params;
+		console.log("Room id 1: "+params);
+		//When file is recieved
 		fs.writeFile(file.name,file.buffer, function(err){
 			
 			var sqlite3 = require('sqlite3').verbose();
 			var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+			
+			/*
+			//First encrypt config
+			var crypto = require('crypto'),
+			    algorithm = 'aes-256-ctr',
+			    password = 'd6F3Efeq';
+
+			//Second 
+			var cipher = crypto.createCipher(algorithm,password)
+  			var crypted = Buffer.concat([cipher.update(file.buffer),cipher.final()]);
+
 			// split into 10 shares with a threshold of 5
-			var shares = secrets.share(file.buffer, 10, 5); 
+			var fileStr = decoder.write(file.buffer);
+			var shares = secrets.share(file.name, 10, 5); 
 
 			for(var i=0; i<shares.length; i++){
 
 			}
 
-			db.close();
+			db.close();*/
 
 		  	if(err){
 		    	console.log('File could not be saved.');
@@ -200,7 +214,13 @@ io.sockets.on("connection", function (socket) {
 		});
 	});
 
+	// Start listening for mouse move events
+	socket.on('mousemove', function (data) {
 
+		// This line sends the event (broadcasts it)
+		// to everyone except the originating client.
+		socket.broadcast.emit('moving', data);
+	});
 
 	socket.on("joinserver", function(name, device, url) {
 		
@@ -246,7 +266,7 @@ io.sockets.on("connection", function (socket) {
 		/*Getting user information from database*/
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
 		var username="bulgaa";
 		
 		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
@@ -280,6 +300,7 @@ io.sockets.on("connection", function (socket) {
 			if (key.name.toLowerCase() === name.toLowerCase())
 				return exists = true;
 		});
+	
 
 		
 		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": chat_id};
@@ -324,7 +345,7 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("getOnlinePeople", function(fn) {
-                fn({people: people});
+        fn({people: people});
     });
 
     socket.on("getFile", function(filename) {
@@ -404,6 +425,75 @@ io.sockets.on("connection", function (socket) {
 		}
 	});
 
+	socket.on("private_send", function(msTime, msg) {
+		//process.exit(1);
+		var re = /^[w]:.*:/;
+		var whisper = re.test(msg);
+		var whisperStr = msg.split(":");
+		var found = false;
+		if (whisper) {
+			var whisperTo = whisperStr[1];
+			var keys = Object.keys(people);
+			
+			if (keys.length != 0) {
+				for (var i = 0; i<keys.length; i++) {
+					if (people[keys[i]].name === whisperTo) {
+						var whisperId = keys[i];
+						found = true;
+						if (socket.id === whisperId) { //can't whisper to ourselves
+							socket.emit("update", "You can't whisper to yourself.");
+						}
+						break;
+					} 
+				}
+			}
+			if (found && socket.id !== whisperId) {
+				var whisperTo = whisperStr[1];
+				var whisperMsg = whisperStr[2];
+				socket.emit("whisper", {name: "You"}, whisperMsg);
+				io.sockets.socket(whisperId).emit("whisper", msTime, people[socket.id], whisperMsg);
+			} else {
+				socket.emit("update", "Can't find " + whisperTo);
+			}
+		} else {
+
+			if (io.sockets.manager.roomClients[socket.id]['/'+socket.room] !== undefined ) {
+				var str2 = "file:";
+				if(msg.indexOf(str2) != -1){
+					var filename = msg.split(":");
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], filename[1], 1);
+				}
+				var str3 = "Notify to>";
+				if(msg.indexOf(str3) != -1){
+					var interest = msg.split(">");
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], interest[1], 2);
+				}
+
+				var str4 = "File upload<";
+				if(msg.indexOf(str4) != -1){
+					var fileupload = msg.split("<");
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], fileupload[1], 3);
+				}
+
+				else{
+					io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 0);
+				}
+				
+				socket.emit("isTyping", false);
+				if (_.size(chatHistory[socket.room]) > 10) {
+					chatHistory[socket.room].splice(0,1);
+				} else {
+					console.log("Socket room :" + socket.room);
+					chatHistory[socket.room].push(people[socket.id].name + ": " + msg);
+				}
+		    } 
+		    else {
+				socket.emit("private_update", "Please connect to a room.");
+		    }
+			
+		}
+	});
+
 	socket.on("disconnect", function() {
 		if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
 			purge(socket, "disconnect",chat_id);
@@ -412,9 +502,8 @@ io.sockets.on("connection", function (socket) {
 
 	//Room functions
 	socket.on("createRoom", function(name,invite) {
-		if (people[socket.id].inroom) {
-			socket.emit("update", "You are in public chat room. Please leave it first to create private chat room.");
-		} else if (!people[socket.id].owns) {
+		if (!people[socket.id].owns) {
+			console.log(id + " is creating new room");  
 			var id = uuid.v4();
 			var room = new Room(name, id, socket.id, chat_id);
 			room.setLimit(2);
@@ -423,17 +512,74 @@ io.sockets.on("connection", function (socket) {
 			sizeRooms = _.size(rooms);
 			io.sockets.emit("roomList", {rooms: rooms, count: sizeRooms, type: chat_id });
 			//add room to socket, and auto join the creator of the room
-			socket.room = name;
-			socket.join(socket.room);
+			//socket.room = name;
+			//socket.join(socket.room);
 			people[socket.id].owns = id;
 			people[socket.id].inroom = id;
 			room.addPerson(socket.id);
-			socket.emit("update", "Welcome to " + room.name + ".");
-			socket.emit("sendRoomID", {id: id});
+			socket.emit("update_private", "Welcome to " + room.name + ".");
+			socket.emit("sendprivateRoomID", {id: id});
 			chatHistory[socket.room] = [];
+			console.log("Room created with id" + room); 
 		} else {
 			socket.emit("update", "You have already created a room.");
 		}
+	});
+
+	//User save functions
+	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser) {
+		var sqlite3 = require('sqlite3').verbose();
+		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+		if(interest == 1){
+			console.log("Seller is setting up"); 
+			db.run("INSERT INTO tickets (seller, room_id, time, minute, seller_key) VALUES (?,?,?,?,?)", {
+	          1: curUser,
+	          2: roomID,
+	          3: time,
+	          4: minute,
+	          5: pass
+	      	});
+	      	db.close();
+	      	socket.emit("update_private_msg", "Notify to>Buyer");
+		}else{
+			console.log("Buyer is setting up");
+			db.run("INSERT INTO tickets (buyer, room_id, time, minute, buyer_key) VALUES (?,?,?,?,?)", {
+	          1: curUser,
+	          2: roomID,
+	          3: time,
+	          4: minute,
+	          5: pass
+	      	});
+	      	db.close();
+	      	socket.emit("update_private_msg", "Notify to>Seller");
+		}
+	
+	});
+
+	//User setting functions
+	socket.on("set_user", function( pass, roomID, curUser, interest) {
+		var sqlite3 = require('sqlite3').verbose();
+		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+		if(interest == 1){
+			console.log("Seller is setting up"); 
+			db.run("UPDATE tickets SET seller =?, seller_key =? WHERE room_id=?", {
+	          1: curUser,
+	          2: pass,
+	          3: roomID
+	      	});
+	      	db.close();
+	      	socket.emit("update_private_msg", "File upload<Seller");
+		}else{
+			console.log("Buyer is setting up");
+			db.run("UPDATE tickets SET buyer =?, buyer_key =? WHERE room_id=?", {
+	          1: curUser,
+	          2: pass,
+	          3: roomID
+	      	});
+	      	db.close();
+	      	socket.emit("update_private_msg", "File upload<Seller");
+		}
+	
 	});
 
 	socket.on("check", function(name, fn) {
@@ -450,7 +596,7 @@ io.sockets.on("connection", function (socket) {
 		 if (socket.id === room.owner) {
 			purge(socket, "removeRoom",chat_id);
 		} else {
-                	socket.emit("update", "Only the owner can remove a room.");
+            socket.emit("update", "Only the owner can remove a room.");
 		}
 	});
 
@@ -463,45 +609,17 @@ io.sockets.on("connection", function (socket) {
 				if (_.contains((room.people), socket.id)) {
 					socket.emit("update", "You have already joined this room.");
 				} else {
-					if (people[socket.id].inroom !== null) {
-				    		socket.emit("update", "You are already in a room ("+rooms[people[socket.id].inroom].name+"), please leave it first to join another room.");
-				    	} else {
-				    	/*  Feffie Hellman private key exchange for joinin users */
-				    	var p = 107, g = 2;
-					    var usernames = [];
-					    function generatePrivateKey() {   
-					        return Math.floor(Math.random() * 10) + 1;
-					    }
-					    function generatePublicKey(privateKey) {
-					        return ((Math.pow(g, privateKey)) % p);
-					    }
-					    function generateDecryptionKey(privateKey, publicKey) {
-					        return ((Math.pow(publicKey, privateKey)) % p);
-					    }
-
-					    // Encryption
-					    function encDecData(str, k) {       
-					        var encoded = "";
-					        for (i = 0; i < str.length; i++) {
-					            var a = str.charCodeAt(i);
-					            var b = a ^ k;    // bitwise XOR with any number, e.g. 123
-					            encoded = encoded + String.fromCharCode(b);
-					        }
-					        return encoded;
-					    }
-
-						room.addPerson(socket.id);
-						people[socket.id].inroom = id;
-						socket.room = room.name;
-						socket.join(socket.room);
-						user = people[socket.id];
-						io.sockets.in(socket.room).emit("update", user.name + " has connected to " + room.name + " room.");
-						socket.emit("update", "Welcome to " + room.name + ".");
-						socket.emit("sendRoomID", {id: id});
-						var keys = _.keys(chatHistory);
-						if (_.contains(keys, socket.room)) {
-							socket.emit("history", chatHistory[socket.room]);
-						}
+					room.addPerson(socket.id);
+					people[socket.id].inroom = id;
+					//socket.room = room.name;
+					//socket.join(socket.room);
+					user = people[socket.id];
+					io.sockets.in(socket.room).emit("update", user.name + " has connected to " + room.name + " room.");
+					socket.emit("update_private", "Welcome to " + room.name + ".");
+					socket.emit("sendprivateRoomID", {id: id});
+					var keys = _.keys(chatHistory);
+					if (_.contains(keys, socket.room)) {
+						socket.emit("history", chatHistory[socket.room]);
 					}
 				}
 			}

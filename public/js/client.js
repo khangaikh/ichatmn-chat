@@ -89,10 +89,35 @@ function hello(caller) {
 
 
 $(document).ready(function() {
+
+  // This demo depends on the canvas element
+  if(!('getContext' in document.createElement('canvas'))){
+    alert('Sorry, it looks like your browser does not support canvas!');
+    return false;
+  }
+
   //setup "global" variables first
   var socket = io.connect("127.0.0.1:3000");
   var myRoomID = null;
+  var privateRoomID = null;
   var curUser = null;
+  $("#private_actions").hide();
+  $("#private_conversation").hide();
+  $("#private_chatForm").hide();
+
+  var doc = $(document),
+    win = $(window),
+    canvas = $('#paper'),
+    ctx = canvas[0].getContext('2d'),
+    instructions = $('#instructions');
+  // Generate an unique ID
+  var id = Math.round($.now()*Math.random());
+
+  // A flag for drawing activity
+  var drawing = false;
+
+  var clients = {};
+  var cursors = {};
 
   socket.on('connect', function(){
 
@@ -101,30 +126,114 @@ $(document).ready(function() {
     delivery.on('delivery.connect',function(delivery){
       $("#upload[type=submit]").click(function(evt){
         var file = $("input[type=file]")[0].files[0];
-        delivery.send(file);
+        var extraParams = {roomID: privateRoomID};
+        delivery.send(file,extraParams);
         evt.preventDefault();
       });
     });
  
     delivery.on('send.success',function(fileUID){
-      console.log("file was successfully sent." + fileUID.name);
-      $('#uploadFile').modal('toggle');
-      $("#msg").val("file:"+fileUID.name);
+      console.log("file was successfully sent.");
     });
 
     delivery.on('receive.start',function(fileUID){
       console.log('receiving a file!');
     });
  
-    delivery.on('receive.success',function(file){
+    delivery.on('receive.success',function(file,roomID){
       if (file.isImage()) {
         $('img').attr('src', file.dataURL());
         $('#getFileModal').toggle();
       };
     });
-
   });
 
+  socket.on('moving', function (data) {
+
+    if(! (data.id in clients)){
+      // a new user has come online. create a cursor for them
+      cursors[data.id] = $('<div class="cursor">').appendTo('#cursors');
+    }
+    // Move the mouse pointer
+    cursors[data.id].css({
+      'left' : data.x,
+      'top' : data.y
+    });
+
+    // Is the user drawing?
+    if(data.drawing && clients[data.id]){
+      // Draw a line on the canvas. clients[data.id] holds
+      // the previous position of this user's mouse pointer
+      drawLine(clients[data.id].x, clients[data.id].y, data.x, data.y);
+    }
+    // Saving the current client state
+    clients[data.id] = data;
+    clients[data.id].updated = $.now();
+  });
+
+  var prev = {};
+
+  canvas.on('mousedown',function(e){
+
+    drawing = true;
+    prev.x = e.pageX;
+    prev.y = e.pageY;
+
+    // Hide the instructions
+    instructions.fadeOut();
+  });
+
+  doc.bind('mouseup mouseleave',function(){
+    drawing = false;
+  });
+
+  var lastEmit = $.now();
+
+  doc.on('mousemove',function(e){
+    if($.now() - lastEmit > 30){
+      socket.emit('mousemove',{
+        'x': e.pageX,
+        'y': e.pageY,
+        'drawing': drawing,
+        'id': id
+      });
+      lastEmit = $.now();
+    }
+
+    // Draw a line for the current user's movement, as it is
+    // not received in the socket.on('moving') event above
+
+    if(drawing){
+
+      drawLine(prev.x, prev.y, e.pageX, e.pageY);
+
+      prev.x = e.pageX;
+      prev.y = e.pageY;
+    }
+  });
+
+  // Remove inactive clients after 10 seconds of inactivity
+  setInterval(function(){
+
+    for(ident in clients){
+      if($.now() - clients[ident].updated > 10000){
+
+        // Last update was more than 10 seconds ago.
+        // This user has probably closed the page
+
+        cursors[ident].remove();
+        delete clients[ident];
+        delete cursors[ident];
+      }
+    }
+
+  },10000);
+
+  function drawLine(fromx, fromy, tox, toy){
+    ctx.moveTo(fromx, fromy);
+    ctx.lineTo(tox, toy);
+    ctx.stroke();
+  }
 
   $("form").submit(function(event) {
     event.preventDefault();
@@ -185,6 +294,15 @@ $(document).ready(function() {
     }
   });
 
+  //private chat screen
+  $("#private_chatForm").submit(function() {
+    var msg = $("#private_msg").val();
+    if (msg !== "") {
+      socket.emit("private_send", new Date().getTime(), msg);
+      $("#private_msg").val("");
+    }
+  });
+
   //'is typing' message
   var typing = false;
   var timeout = undefined;
@@ -206,6 +324,18 @@ $(document).ready(function() {
     }
   });
 
+  $("#private_msg").keypress(function(e){
+    if (e.which !== 13) {
+      if (typing === false && privateRoomID !== null && $("#private_msg").is(":focus")) {
+        typing = true;
+        socket.emit("typing", true);
+      } else {
+        clearTimeout(timeout);
+        timeout = setTimeout(timeoutFunction, 5000);
+      }
+    }
+  });
+
   socket.on("isTyping", function(data) {
     if (data.isTyping) {
       if ($("#"+data.person+"").length === 0) {
@@ -218,29 +348,9 @@ $(document).ready(function() {
   });
 
 
-/*
-  $("#msg").keypress(function(){
-    if ($("#msg").is(":focus")) {
-      if (myRoomID !== null) {
-        socket.emit("isTyping");
-      }
-    } else {
-      $("#keyboard").remove();
-    }
+  $("#showCreateRoom").click(function() {
+    $("#createRoomForm").toggle();
   });
-
-  socket.on("isTyping", function(data) {
-    if (data.typing) {
-      if ($("#keyboard").length === 0)
-        $("#updates").append("<li id='keyboard'><span class='text-muted'><i class='fa fa-keyboard-o'></i>" + data.person + " is typing.</li>");
-    } else {
-      socket.emit("clearMessage");
-      $("#keyboard").remove();
-    }
-    console.log(data);
-  });
-*/
-
   $("#showCreateRoom").click(function() {
     $("#createRoomForm").toggle();
   });
@@ -259,8 +369,40 @@ $(document).ready(function() {
         if (roomName.length > 0) { //also check for roomname
           socket.emit("createRoom", roomName, invite);
           $("#errors").empty();
+          $("#private_actions").show();
           $("#errors").hide();
           }
+        }
+    });
+  });
+
+  $("#createSeller").click(function() {
+    var pass = $("#seller_pass").val();
+    var roomID = privateRoomID;
+    socket.emit("set_user", pass,roomID, curUser, 1);
+  });
+
+  $("#createBuyer").click(function() {
+    var pass = $("#buyer_pass").val();
+    var roomID = privateRoomID;
+    socket.emit("set_user", pass,roomID, curUser, 2);
+  });
+
+  $("#createKey").click(function() {
+    var interest = $("#interest").val();
+    var time = $("#time").val();
+    var minute = $("#minute").val();
+    var pass = $("#user_pass").val();
+    var roomID = privateRoomID;
+
+    socket.emit("save_user", interest, time, minute, pass, roomID, curUser, function(data) {
+       alert(data);
+       if (data == 1) {
+          //Seller
+           $("#private_msgs").append("<li><strong><span class='text-success'> <a href='#' data-toggle='modal' data-target='#modalBuyer' > Send buyer for notify </a></li>");
+        } else {      
+          //Buyer
+           $("#private_msgs").append("<li><strong><span class='text-success'> <a href='#' data-toggle='modal' data-target='#modalSeller' > Send seller for notify </a></li>");
         }
     });
   });
@@ -289,6 +431,8 @@ $(document).ready(function() {
     $("#msg").val("w:"+name+":");
     $("#msg").focus();
   });
+
+
 /*
   $("#whisper").change(function() {
     var peopleOnline = [];
@@ -389,6 +533,16 @@ socket.on("history", function(data) {
     $("#msgs").append("<li>" + msg + "</li>");
   });
 
+  socket.on("update_private", function(msg) {
+    $("#private_conversation").show();
+    $("#private_chatForm").show();
+    $("#private_msgs").append("<li>" + msg + "</li>");
+  });
+
+  socket.on("update_private_msg", function(msg) {
+    $("#private_msg").val(msg);
+  });
+
   socket.on("update-people", function(data){
     //var peopleOnline = [];
     $("#people").empty();
@@ -439,6 +593,26 @@ socket.on("history", function(data) {
      timeout = setTimeout(timeoutFunction, 0);
   });
 
+  socket.on("private_chat", function(msTime, person, msg, file) {
+    if(file==0){
+      $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
+    }else if(file==2){
+      $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#modal"+msg+"' > "+msg+" set up your info for trade room  </a></li>");
+      $("#private_actions").hide();
+    }
+    else if(file==3){
+      $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#uploadFile' > "+msg+" set up your secret file  </a></li>");
+    }
+    else{
+      $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
+    }
+    
+    //clear typing field
+     $("#"+person.name+"").remove();
+     clearTimeout(timeout);
+     timeout = setTimeout(timeoutFunction, 0);
+  });
+
 
   socket.on("whisper", function(msTime, person, msg) {
     if (person.name === "You") {
@@ -461,7 +635,7 @@ socket.on("history", function(data) {
           console.log("invitee :"+ room.invited);
           var html ="";
           if(room.invited == curUser ){
-             var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>" + " " + "<button id="+id+" class='removeRoomBtn btn btn-default btn-xs'>Remove</button>";
+             var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>";
           }
           $('#rooms').append("<li id="+id+" class=\"list-group-item\"><span>" + room.name + "</span> " + html + "</li>");
         }
@@ -475,6 +649,15 @@ socket.on("history", function(data) {
   socket.on("sendRoomID", function(data) {
     myRoomID = data.id;
   });
+
+  socket.on("sendprivateRoomID", function(data) {
+    privateRoomID = data.id;
+  });
+
+  socket.on("show_actions", function(data) {
+    $("#private_actions").show();
+  });
+
   socket.on("sendUser", function(data) {
     curUser = data.user;
   });
