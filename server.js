@@ -184,7 +184,7 @@ io.sockets.on("connection", function (socket) {
 		fs.writeFile(file.name,file.buffer, function(err){
 			
 			var sqlite3 = require('sqlite3').verbose();
-			var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 			
 			/*
 			//First encrypt config
@@ -268,7 +268,7 @@ io.sockets.on("connection", function (socket) {
 		/*Getting user information from database*/
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 		var username="bulgaa";
 		
 		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
@@ -517,7 +517,7 @@ io.sockets.on("connection", function (socket) {
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 		}else{
 			var sqlite3 = require('sqlite3').verbose();
-			var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 			console.log("Seller is setting up secret key"); 
 			db.run("UPDATE tickets SET seller_secret_key =? WHERE room_id=?", {
 	          1: buffer,
@@ -557,7 +557,7 @@ io.sockets.on("connection", function (socket) {
 	//User save functions
 	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser) {
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
 			db.run("INSERT INTO tickets (seller, room_id, time, minute, seller_key) VALUES (?,?,?,?,?)", {
@@ -587,7 +587,7 @@ io.sockets.on("connection", function (socket) {
 	//User setting functions
 	socket.on("set_user", function( pass, roomID, curUser, interest) {
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
 			db.run("UPDATE tickets SET seller =?, seller_key =? WHERE room_id=?", {
