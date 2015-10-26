@@ -324,6 +324,7 @@ $(document).ready(function() {
     }
   });
 
+
   $("#private_msg").keypress(function(e){
     if (e.which !== 13) {
       if (typing === false && privateRoomID !== null && $("#private_msg").is(":focus")) {
@@ -374,6 +375,12 @@ $(document).ready(function() {
           }
         }
     });
+  });
+
+  $("#saveKey").click(function() {
+    // save canvas image as data url (png format by default)
+    var dataURL = canvas[0].toDataURL("image/png");
+    socket.emit("save_key", curUser, myRoomID, dataURL);
   });
 
   $("#createSeller").click(function() {
@@ -598,10 +605,13 @@ socket.on("history", function(data) {
       $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
     }else if(file==2){
       $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#modal"+msg+"' > "+msg+" set up your info for trade room  </a></li>");
-      $("#private_actions").hide();
+      //$("#private_actions").hide();
     }
     else if(file==3){
       $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#uploadFile' > "+msg+" set up your secret file  </a></li>");
+    }
+    else if(file==4){
+      $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#drawModal' > "+msg+"</a></li>");
     }
     else{
       $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
