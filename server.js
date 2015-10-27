@@ -477,9 +477,14 @@ io.sockets.on("connection", function (socket) {
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], fileupload[1], 3);
 				}
 
-				var str5 = "secret key<";
+				var str5 = "Draw your secret key<";
 				if(msg.indexOf(str5) != -1){
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 4);
+				}
+
+				var str6 = "localhost:3001?id=";
+				if(msg.indexOf(str6) != -1){
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 5);
 				}
 
 				else{
@@ -508,10 +513,12 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("save_key", function(curUser,roomID,dataURL) {
+
 		var dataString = dataURL.split( "," )[ 1 ];
     	var buffer = new Buffer( dataString, 'base64');
 
 		console.log("Image created");
+
 		if(buffer.length<256){
 			//Image is smaller than 256 bit alert draw agian
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
@@ -526,6 +533,14 @@ io.sockets.on("connection", function (socket) {
 	      	db.close();
 	      	socket.emit("update_private_msg", "Draw your secret key<");
 		}
+	});
+	// Finishing set up process
+	socket.on("finish", function(curUser,roomID) {
+		//Clearing all private chat information
+		//if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
+		//	purge(socket, "disconnect",chat_id);
+			socket.emit("update_private_msg", "localhost:3001?id="+roomID+"");
+		//}
 	});
 
 	//Room functions

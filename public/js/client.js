@@ -379,8 +379,24 @@ $(document).ready(function() {
 
   $("#saveKey").click(function() {
     // save canvas image as data url (png format by default)
-    var dataURL = canvas[0].toDataURL("image/png");
+    var roomID = privateRoomID;
+    var dataURL = canvas[0].toDataURL();
     socket.emit("save_key", curUser, myRoomID, dataURL);
+    ctx.clearRect(0, 0, 1000, 600);
+
+  });
+
+  $("#finish").click(function() {
+    if (confirm('Are you sure to finish trading info?')) {
+        var roomID = privateRoomID;
+        socket.emit("finish", curUser, roomID);
+    }
+    // save canvas image as data url (png format by default)
+  });
+
+  $("#clear").click(function() {
+    // save canvas image as data url (png format by default)
+    ctx.clearRect(0, 0, 1000, 600);
   });
 
   $("#createSeller").click(function() {
@@ -584,9 +600,6 @@ socket.on("history", function(data) {
     }*/
   });
 
-  
-  
-
   socket.on("chat", function(msTime, person, msg, file) {
     if(file==0){
       $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
@@ -612,6 +625,9 @@ socket.on("history", function(data) {
     }
     else if(file==4){
       $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#drawModal' > "+msg+"</a></li>");
+    }
+    else if(file==5){
+      $("#private_msgs").append("<li><strong><span class='text-success'><a href="+msg+" target='_blank'> Notify to other end </a></li>");
     }
     else{
       $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
