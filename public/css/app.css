@@ -16,6 +16,7 @@
 #private_conversation {
   font-size: 18px;
   margin: 0px;
+  overflow: scroll;
   height: 300px;
  }
 
@@ -27,13 +28,13 @@
 }
 
 #main-draw-screen {
-  background:url('img/bg.png') repeat #e4e4e4;
+  background:url('img/china_bg.gif');
   /* This will hide the extra canvas if the screen is small */
   overflow:hidden;
 }
 
 #paper{
-  background:url('img/bg.png') repeat #e4e4e4;
+  background:url('img/china_bg.gif') repeat #e4e4e4;
   overflow:hidden;
 }
 

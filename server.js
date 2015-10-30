@@ -184,7 +184,7 @@ io.sockets.on("connection", function (socket) {
 		fs.writeFile(file.name,file.buffer, function(err){
 			
 			var sqlite3 = require('sqlite3').verbose();
-			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+			var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
 			
 			/*
 			//First encrypt config
@@ -268,7 +268,7 @@ io.sockets.on("connection", function (socket) {
 		/*Getting user information from database*/
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
 		var username="bulgaa";
 		
 		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
@@ -524,14 +524,44 @@ io.sockets.on("connection", function (socket) {
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 		}else{
 			var sqlite3 = require('sqlite3').verbose();
-			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
-			console.log("Seller is setting up secret key"); 
-			db.run("UPDATE tickets SET seller_secret_key =? WHERE room_id=?", {
-	          1: buffer,
-	          2: roomID
-	      	});
-	      	db.close();
-	      	socket.emit("update_private_msg", "Draw your secret key<");
+			var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
+
+			db.all("SELECT * FROM tickets", function(err, rows) {  
+        
+	        if(rows.length==0){
+	        	socket.emit("exists", {msg: "The one time password is expired or wrong.", proposedName: "Wrong pass"});
+	        }else{
+		        	rows.forEach(function (row) { 
+		        		if(row.room_id == roomID){ // ticket by room id
+		        			var buyer_key = row.buyer_key;
+		        			var seller_key = row.seller_key;
+		        			var time = row.time;
+		        			var minute = row.minute;
+		        			//Since we are not checking redrawing we are not including this line
+		        			//var encrypt_string = dataString +"*" + buyer_key +"*"+ seller_key +"*"+ time +"*"+minute;
+		        			var encrypt_string = buyer_key +"*"+ seller_key +"*"+ time +"*"+minute;
+		        			var encrypt_string_key = buyer_key +"*"+ seller_key;
+		        			//Encryption with openssl with password of both users
+							var crypto = require('crypto'),algorithm = 'aes-256-ctr',password = encrypt_string_key;
+							var cipher = crypto.createCipheriv(algorithm, password);
+							//Encrypted keys outpur would hexedeicmel 256 bit code
+							var encrypted = cipher.update(encrypt_string, 'utf8', 'hex');
+							encrypted += cipher.final('hex');
+							console.log('Encrypted secret key: ', encrypted);
+							console.log("Seller is setting up secret key"); 
+							//Saving encrypted key
+							db.run("UPDATE tickets SET secret_key =? WHERE room_id=?", {
+					          1: buffer,
+					          2: roomID
+					      	});
+					      	db.close();
+					      	socket.emit("update_private_msg", "Draw your secret key<");
+		        		}
+				    })  
+				}
+	        });
+
+			
 		}
 	});
 	// Finishing set up process
@@ -572,7 +602,7 @@ io.sockets.on("connection", function (socket) {
 	//User save functions
 	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser) {
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
 			db.run("INSERT INTO tickets (seller, room_id, time, minute, seller_key) VALUES (?,?,?,?,?)", {
@@ -602,7 +632,7 @@ io.sockets.on("connection", function (socket) {
 	//User setting functions
 	socket.on("set_user", function( pass, roomID, curUser, interest) {
 		var sqlite3 = require('sqlite3').verbose();
-		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+		var db = new sqlite3.Database("/Applications/XAMPP/htdocs/ichat/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
 			db.run("UPDATE tickets SET seller =?, seller_key =? WHERE room_id=?", {
