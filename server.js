@@ -551,7 +551,7 @@ io.sockets.on("connection", function (socket) {
 							console.log("Seller is setting up secret key"); 
 							//Saving encrypted key
 							db.run("UPDATE tickets SET secret_key =? WHERE room_id=?", {
-					          1: buffer,
+					          1: encrypted,
 					          2: roomID
 					      	});
 					      	db.close();
@@ -560,7 +560,7 @@ io.sockets.on("connection", function (socket) {
 				    })  
 				}
 	        });
-
+		socket.emit("update_private_msg", "Draw your secret key<");
 			
 		}
 	});
