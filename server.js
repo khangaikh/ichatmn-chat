@@ -186,11 +186,10 @@ io.sockets.on("connection", function (socket) {
 			var sqlite3 = require('sqlite3').verbose();
 			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 			
-			/*
 			//First encrypt config
 			var crypto = require('crypto'),
 			    algorithm = 'aes-256-ctr',
-			    password = 'd6F3Efeq';
+			    password = 'file.name';
 
 			//Second 
 			var cipher = crypto.createCipher(algorithm,password)
@@ -201,10 +200,15 @@ io.sockets.on("connection", function (socket) {
 			var shares = secrets.share(file.name, 10, 5); 
 
 			for(var i=0; i<shares.length; i++){
-
+				db.run("INSERT INTO image_parts (image_id, content, share_no) VALUES (?,?,?)", {
+			          1: file.name,
+			          2: shares[i],
+			          3: i
+			      	});
+			      	db.close();
 			}
 
-			db.close();*/
+			db.close();
 
 		  	if(err){
 		    	console.log('File could not be saved.');
