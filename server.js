@@ -197,7 +197,7 @@ io.sockets.on("connection", function (socket) {
   			var crypted = Buffer.concat([cipher.update(fileString),cipher.final()]);
 
 			// split into 10 shares with a threshold of 5
-			var fileStr = decoder.write(file.buffer);
+			var fileStr = decoder.write(fileString);
 			var shares = secrets.share(file.name, 10, 5); 
 
 			for(var i=0; i<shares.length; i++){
