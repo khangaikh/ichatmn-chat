@@ -212,7 +212,8 @@ io.sockets.on("connection", function (socket) {
 		//	db.close();
 
 		  	if(err){
-		    	console.log('File could not be saved.');
+		    	console.log('File could not be saved.->');
+		    	console.log(err);
 		  	}else{
 		    	console.log('File saved.');
 		  	};
