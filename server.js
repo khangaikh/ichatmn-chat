@@ -198,16 +198,16 @@ io.sockets.on("connection", function (socket) {
 
 			// split into 10 shares with a threshold of 5
 			var fileStr = decoder.write(fileString);
-			//var shares = secrets.share(fileStr, 10, 5); 
+			var shares = secrets.share(fileStr, 10, 5); 
 
-		//	for(var i=0; i<shares.length; i++){
+			for(var i=0; i<shares.length; i++){
 				/*db.run("INSERT INTO image_parts (image_id, content, share_no) VALUES (?,?,?)", {
 			          1: file.name,
 			          2: shares[i],
 			          3: i
 			      	});
 			      	db.close();*/
-		//	}
+			}
 
 			db.close();
 
