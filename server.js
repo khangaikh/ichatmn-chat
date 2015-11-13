@@ -198,18 +198,18 @@ io.sockets.on("connection", function (socket) {
   			var crypted = Buffer.concat([cipher.update(textChunk),cipher.final()]);
 
 			// split into 10 shares with a threshold of 5
-			var shares = secrets.share(textChunk, 10, 5); 
+		//	var shares = secrets.share(textChunk, 10, 5); 
 
-			for(var i=0; i<shares.length; i++){
+		//	for(var i=0; i<shares.length; i++){
 				/*db.run("INSERT INTO image_parts (image_id, content, share_no) VALUES (?,?,?)", {
 			          1: file.name,
 			          2: shares[i],
 			          3: i
 			      	});
 			      	db.close();*/
-			}
+		//	}
 
-			db.close();
+		//	db.close();
 
 		  	if(err){
 		    	console.log('File could not be saved.');
