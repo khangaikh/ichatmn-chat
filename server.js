@@ -192,10 +192,10 @@ io.sockets.on("connection", function (socket) {
 			    password = 'file.name';
 
 			//Second 
-			var decoder = new StringDecoder('utf8');
-			var textChunk = decoder.write(file.buffer);
-			var cipher = crypto.createCipher(algorithm,password)
-  			var crypted = Buffer.concat([cipher.update(textChunk),cipher.final()]);
+		//	var decoder = new StringDecoder('utf8');
+		//	var textChunk = decoder.write(file.buffer);
+		//	var cipher = crypto.createCipher(algorithm,password)
+  		//	var crypted = Buffer.concat([cipher.update(textChunk),cipher.final()]);
 
 			// split into 10 shares with a threshold of 5
 		//	var shares = secrets.share(textChunk, 10, 5); 
