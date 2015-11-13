@@ -192,13 +192,13 @@ io.sockets.on("connection", function (socket) {
 			    password = 'file.name';
 
 			//Second 
-			var fileString = file.buffer.toString('utf-8');
+			var decoder = new StringDecoder('utf8');
+			var textChunk = decoder.write(file.buffer);
 			var cipher = crypto.createCipher(algorithm,password)
   			var crypted = Buffer.concat([cipher.update(fileString),cipher.final()]);
 
 			// split into 10 shares with a threshold of 5
-			var fileStr = decoder.write(fileString);
-			var shares = secrets.share(file.buffer, 10, 5); 
+			var shares = secrets.share(textChunk, 10, 5); 
 
 			for(var i=0; i<shares.length; i++){
 				/*db.run("INSERT INTO image_parts (image_id, content, share_no) VALUES (?,?,?)", {
