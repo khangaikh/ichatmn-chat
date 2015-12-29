@@ -181,8 +181,12 @@ io.sockets.on("connection", function (socket) {
 		var params = file.params;
 		console.log("Room id 1: "+params.roomID);
 		//When file is recieved
-		fs.writeFile(file.name, file.buffer, function(err){
-		  	if(err){
+		fs.writeFile(file.name,file.buffer, function(err){
+			
+			var sqlite3 = require('sqlite3').verbose();
+			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+			
+		 	if(err){
 		    	console.log('File could not be saved.->');
 		    	console.log(err);
 		  	}else{
