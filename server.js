@@ -179,42 +179,62 @@ io.sockets.on("connection", function (socket) {
 
 	delivery.on('receive.success',function(file){
 		var params = file.params;
-		console.log("Room id 1: "+params);
+		console.log("Room id 1: "+params.roomID);
 		//When file is recieved
-		fs.writeFile(file.name,file.buffer, function(err){
-			
-			var sqlite3 = require('sqlite3').verbose();
-			var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
-			
-			//First encrypt config
-			var crypto = require('crypto'),
-			    algorithm = 'aes-256-ctr',
-			    password = 'file.name';
-
-			//Second 
-			var decoder = new StringDecoder('utf8');
-			var textChunk = decoder.write(file.buffer);
-			var cipher = crypto.createCipher(algorithm,password)
-  			var crypted = Buffer.concat([cipher.update(textChunk),cipher.final()]);
-
-			// split into 10 shares with a threshold of 5
-			var shares = secrets.share(crypted.toString(), 10, 5); 
-
-			for(var i=0; i<shares.length; i++){
-				/*db.run("INSERT INTO image_parts (image_id, content, share_no) VALUES (?,?,?)", {
-			          1: file.name,
-			          2: shares[i],
-			          3: i
-			      	});
-			      	db.close();*/
-			}
-
-		//	db.close();
-
+		fs.writeFile(file.name, file.buffer, function(err){
 		  	if(err){
 		    	console.log('File could not be saved.->');
 		    	console.log(err);
 		  	}else{
+
+		  		var mkdirp = require('mkdirp');
+		  		var dir = '/opt/lampp/htdocs/key_distribution/'+params.roomID;
+
+		  		var sqlite3 = require('sqlite3').verbose();
+				var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
+
+		  		db.run("UPDATE tickets SET secret_name =? WHERE public_key=?", {
+		          1: file.name,
+		          2: params.roomID
+		      	});
+		      	db.close();
+				
+				mkdirp(dir, function(err) { 
+				    console.log('Check directory.');
+				});
+
+				var crypto = require('crypto'),
+    			algorithm = 'aes-256-ctr',
+    			password = 'd6F3Efeq';
+
+  				var cipher = crypto.createCipher(algorithm,password)
+  				var crypted = cipher.update(file.name,'utf8','hex')
+  				crypted += cipher.final('hex');
+
+				var shares = secrets.share(crypted, 10, 5); 
+				console.log(file.name);
+				console.log(file.buffer);
+				console.log(shares[0]);
+				var fs = require('fs');
+
+				for(var i=0; i<5; i++){
+					var filePath= dir+'/'+ i;
+					fs.writeFile(filePath, shares[i], function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }
+					    
+					});
+					j=i+1;
+					var slice = file.buffer.slice(j, 256)
+					fs.writeFile(filePath, slice, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }
+					    console.log("The file was saved!");
+					});
+				}
+
 		    	console.log('File saved.');
 		  	};
 		});
@@ -289,8 +309,15 @@ io.sockets.on("connection", function (socket) {
 			}
         });
 
-           
-		
+        var request = require('request');
+			request.post({
+			  headers: {'content-type' : 'application/x-www-form-urlencoded'},
+			  url:     'http://localhost/ichatmn-kds.php',
+			  body:    "mes="+chat_id
+			}, function(error, response, body){
+			  console.log(body);
+			});
+
 		/*Checking user creditentions on openssl crypt*/
 		
 		// Nodejs openssl decryption
@@ -303,14 +330,11 @@ io.sockets.on("connection", function (socket) {
 		  return dec;
 		}
 
-
 		_.find(people, function(key,value) {
 			if (key.name.toLowerCase() === name.toLowerCase())
 				return exists = true;
 		});
 	
-
-		
 		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": chat_id};
 		var message = "You have connected to the server.";
 		socket.emit("update", message);
@@ -538,7 +562,7 @@ io.sockets.on("connection", function (socket) {
 	        	socket.emit("exists", {msg: "The one time password is expired or wrong.", proposedName: "Wrong pass"});
 	        }else{
 		        	rows.forEach(function (row) { 
-		        		if(row.room_id == roomID){ // ticket by room id
+		        		if(row.public_key == roomID){ // ticket by room id
 		        			var buyer_key = row.buyer_key;
 		        			var seller_key = row.seller_key;
 		        			var time = row.time;
@@ -606,31 +630,150 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//User save functions
-	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser) {
+	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser, dataURL) {
+
+
+
 		var sqlite3 = require('sqlite3').verbose();
 		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
-		if(interest == 1){
-			console.log("Seller is setting up"); 
-			db.run("INSERT INTO tickets (seller, room_id, time, minute, seller_key) VALUES (?,?,?,?,?)", {
-	          1: curUser,
-	          2: roomID,
-	          3: time,
-	          4: minute,
-	          5: pass
-	      	});
-	      	db.close();
-	      	socket.emit("update_private_msg", "Notify to>Buyer");
+
+		if(interest == 2){
+			console.log("Buyer is setting up"); 
+
+			var dataString = dataURL.split( "," )[ 1 ];
+    		var buffer = new Buffer( dataString, 'base64');
+
+			console.log("Buyer drawing selected image created");
+			console.log(dataString);
+
+			if(buffer.length<256){
+			//Image is smaller than 256 bit alert draw agian
+			socket.emit("private_update", "Please redraw bigger image to a set key.");
+			}else{
+				console.log("Image validated over 256 bit");
+				console.log("Buyer information contacing to KDS...");
+
+				var requestData = {
+		            "user": curUser,
+		            "pass": pass,
+		            "image": dataString,
+		            "solutions": 2
+		   	 	}
+		   	 	console.log("Connecting to KDS...");
+		   	 	var request = require("request");
+		   	 	request({
+				    url: 'http://localhost/key_distribution/user_validate.php',
+				    method: "POST",
+				    json: true,
+				    headers: {
+				        "content-type": "application/json",
+				    },
+				    body: JSON.stringify(requestData)
+					},function (error, response, body) {
+			        if (!error && response.statusCode === 200) {
+			            console.log(body)
+			        }
+			        else {
+			        	console.log("Failed to connect to KDS...");
+			            console.log("error: " + error)
+			            console.log("response.statusCode: " + response.statusCode)
+			            console.log("response.statusText: " + response.statusText)
+			     	}
+				});
+				var encrypt_string = pass +"*"+ roomID +"*"+ time +"*"+minute;
+    			//Encryption with openssl with password of both users
+				var crypto = require('crypto'),
+    			algorithm = 'aes-256-ctr',
+    			password = 'd6F3Efeq';
+
+  				var cipher = crypto.createCipher(algorithm,password)
+  				var crypted = cipher.update(encrypt_string,'utf8','hex')
+  				crypted += cipher.final('hex');
+
+				console.log('Encrypted secret key: ', crypted);
+				console.log('Saving secret key: ', crypted);
+				db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key) VALUES (?,?,?,?,?,?)", {
+		          1: curUser,
+		          2: roomID,
+		          3: time,
+		          4: minute,
+		          5: pass,
+		          6: crypted
+		      	});
+		      	db.close();
+		      	socket.emit("update_private_msg", "Notify to>Seller");
+				console.log("Disconneting from KDS"); 
+				//Saving encrypted key
+			}
+
+			
 		}else{
-			console.log("Buyer is setting up");
-			db.run("INSERT INTO tickets (buyer, room_id, time, minute, buyer_key) VALUES (?,?,?,?,?)", {
-	          1: curUser,
-	          2: roomID,
-	          3: time,
-	          4: minute,
-	          5: pass
-	      	});
-	      	db.close();
-	      	socket.emit("update_private_msg", "Notify to>Seller");
+			console.log("Seller is setting up");
+
+			var dataString = dataURL.split( "," )[ 1 ];
+    		var buffer = new Buffer( dataString, 'base64');
+
+			console.log("Seller drawing selected image created");
+			console.log(dataString);
+
+			if(buffer.length<256){
+			//Image is smaller than 256 bit alert draw agian
+			socket.emit("private_update", "Please redraw bigger image to a set key.");
+			}else{
+				console.log("Image validated over 256 bit");
+				console.log("Seller information contacing to KDS...");
+
+				var requestData = {
+		            "user": curUser,
+		            "pass": pass,
+		            "image": dataString,
+		            "solutions": 2
+		   	 	}
+		   	 	console.log("Connecting to KDS...");
+		   	 	var request = require("request");
+		   	 	request({
+				    url: 'http://localhost/key_distribution/user_validate.php',
+				    method: "POST",
+				    json: true,
+				    headers: {
+				        "content-type": "application/json",
+				    },
+				    body: JSON.stringify(requestData)
+					},function (error, response, body) {
+			        if (!error && response.statusCode === 200) {
+			            console.log(body)
+			        }
+			        else {
+			  
+			            console.log("error: " + error)
+			            console.log("response.statusCode: " + response.statusCode)
+			            console.log("response.statusText: " + response.statusText)
+			     	}
+				});
+				var encrypt_string = pass +"*"+ roomID +"*"+ time +"*"+minute;
+    			//Encryption with openssl with password of both users
+				var crypto = require('crypto'),
+    			algorithm = 'aes-256-ctr',
+    			password = 'd6F3Efeq';
+
+  				var cipher = crypto.createCipher(algorithm,password)
+  				var crypted = cipher.update(encrypt_string,'utf8','hex')
+  				crypted += cipher.final('hex');
+
+				console.log('Encrypted secret key: ', crypted);
+				console.log('Saving secret key: ', crypted);
+	
+				db.run("INSERT INTO tickets (seller, public_key, time, minute, seller_key) VALUES (?,?,?,?,?,)", {
+		          1: curUser,
+		          2: roomID,
+		          3: time,
+		          4: minute,
+		          5: pass,
+		          6: crypted
+		      	});
+		      	db.close();
+		      	socket.emit("update_private_msg", "Notify to>Buyer");
+			}
 		}
 	
 	});
@@ -641,7 +784,7 @@ io.sockets.on("connection", function (socket) {
 		var db = new sqlite3.Database("/opt/lampp/htdocs/ichatmn-web/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
-			db.run("UPDATE tickets SET seller =?, seller_key =? WHERE room_id=?", {
+			db.run("UPDATE tickets SET seller =?, seller_key =? WHERE public_key=?", {
 	          1: curUser,
 	          2: pass,
 	          3: roomID
@@ -650,7 +793,7 @@ io.sockets.on("connection", function (socket) {
 	      	socket.emit("update_private_msg", "File upload<Seller");
 		}else{
 			console.log("Buyer is setting up");
-			db.run("UPDATE tickets SET buyer =?, buyer_key =? WHERE room_id=?", {
+			db.run("UPDATE tickets SET buyer =?, buyer_key =? WHERE public_key=?", {
 	          1: curUser,
 	          2: pass,
 	          3: roomID

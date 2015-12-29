@@ -105,16 +105,21 @@ $(document).ready(function() {
   $("#private_conversation").hide();
   $("#private_chatForm").hide();
 
-  var doc = $(document),
-    win = $(window),
-    canvas = $('#paper'),
-    ctx = canvas[0].getContext('2d'),
-    instructions = $('#instructions');
-  // Generate an unique ID
+  var doc = $(document);
+  var win = $(window);
+  var canvas = $('#paper');
+
+  var ctx = canvas[0].getContext('2d');
+
+  var canvas1 = $('#paper2');
+
+  var ctx1 = canvas1[0].getContext('2d');
+ 
   var id = Math.round($.now()*Math.random());
 
   // A flag for drawing activity
   var drawing = false;
+  var second = false;
 
   var clients = {};
   var cursors = {};
@@ -150,25 +155,13 @@ $(document).ready(function() {
 
   socket.on('moving', function (data) {
 
-    if(! (data.id in clients)){
-      // a new user has come online. create a cursor for them
-      cursors[data.id] = $('<div class="cursor">').appendTo('#cursors');
-    }
-    // Move the mouse pointer
-    cursors[data.id].css({
-      'left' : data.x,
-      'top' : data.y
-    });
-
     // Is the user drawing?
     if(data.drawing && clients[data.id]){
       // Draw a line on the canvas. clients[data.id] holds
       // the previous position of this user's mouse pointer
       drawLine(clients[data.id].x, clients[data.id].y, data.x, data.y);
     }
-    // Saving the current client state
-    clients[data.id] = data;
-    clients[data.id].updated = $.now();
+
   });
 
   var prev = {};
@@ -180,7 +173,18 @@ $(document).ready(function() {
     prev.y = e.pageY;
 
     // Hide the instructions
-    instructions.fadeOut();
+   
+  });
+
+  canvas1.on('mousedown',function(e){
+
+    drawing = true;
+    second = true;
+    prev.x = e.pageX;
+    prev.y = e.pageY;
+
+    // Hide the instructions
+   
   });
 
   doc.bind('mouseup mouseleave',function(){
@@ -190,7 +194,7 @@ $(document).ready(function() {
   var lastEmit = $.now();
 
   doc.on('mousemove',function(e){
-    if($.now() - lastEmit > 30){
+    if($.now() - lastEmit > 10){
       socket.emit('mousemove',{
         'x': e.pageX,
         'y': e.pageY,
@@ -230,9 +234,25 @@ $(document).ready(function() {
   },10000);
 
   function drawLine(fromx, fromy, tox, toy){
-    ctx.moveTo(fromx, fromy);
-    ctx.lineTo(tox, toy);
-    ctx.stroke();
+    var fromxnew =tox - 200;
+    var fromxnew =toy - 200;
+    if(second){
+      ctx1.moveTo(fromx, fromy);
+      ctx1.lineTo(tox, toy);
+      ctx1.stroke();
+    }else{
+      ctx.moveTo(fromx, fromy);
+      ctx.lineTo(tox, toy);
+      ctx.stroke();
+    }
+    
+  }
+
+  function drawLine1(fromx, fromy, tox, toy){
+    var fromxnew =tox - 200;
+    var fromxnew =toy - 200;
+
+   
   }
 
   $("form").submit(function(event) {
@@ -382,7 +402,7 @@ $(document).ready(function() {
     var roomID = privateRoomID;
     var dataURL = canvas[0].toDataURL();
     socket.emit("save_key", curUser, myRoomID, dataURL);
-    ctx.clearRect(0, 0, 1000, 600);
+    ctx.clearRect(0, 0, 1500, 600);
 
   });
 
@@ -396,7 +416,7 @@ $(document).ready(function() {
 
   $("#clear").click(function() {
     // save canvas image as data url (png format by default)
-    ctx.clearRect(0, 0, 1000, 600);
+    ctx.clearRect(0, 0, 500, 600);
   });
 
   $("#createSeller").click(function() {
@@ -417,8 +437,9 @@ $(document).ready(function() {
     var minute = $("#minute").val();
     var pass = $("#user_pass").val();
     var roomID = privateRoomID;
+    var dataURL = canvas[0].toDataURL();
 
-    socket.emit("save_user", interest, time, minute, pass, roomID, curUser, function(data) {
+    socket.emit("save_user", interest, time, minute, pass, roomID, curUser, dataURL, function(data) {
        alert(data);
        if (data == 1) {
           //Seller
@@ -454,7 +475,6 @@ $(document).ready(function() {
     $("#msg").val("w:"+name+":");
     $("#msg").focus();
   });
-
 
 /*
   $("#whisper").change(function() {

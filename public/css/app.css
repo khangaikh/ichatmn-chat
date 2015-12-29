@@ -35,7 +35,9 @@
 
 #paper{
   background:url('img/china_bg.gif') repeat #e4e4e4;
-  overflow:hidden;
+}
+#paper2{
+  background:url('img/china_bg.gif') repeat #e4e4e4;
 }
 
 hgroup{

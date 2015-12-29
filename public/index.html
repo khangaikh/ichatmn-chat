@@ -38,7 +38,7 @@
          <!-- <input type="button" name="start_button" id="start_button" value="Record" onclick="startButton(event)" class="btn btn-info btn-lg"> -->
           <div class="btn-group">
             <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
-              Actions <span class="caret"></span>
+              Action <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
               <li><a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal">Create private room</a></li>
@@ -63,9 +63,7 @@
             </button>
             <ul class="dropdown-menu" role="menu">
               <li><a href="#" name="setUp" data-toggle="modal" data-target="#tradeModal">Set up</a></li>
-              <li><a href="#" name="setUp" data-toggle="modal" data-target="#drawModal">Draw key</a></li>
               <li><a href="#" id="finish">Finish up</a></li>
-              <li><a href="#" name="disconnect" id="disconnect">Disconnect from private room</a></li>
             </ul>
           </div>
         </form>
@@ -105,36 +103,13 @@
   <!-- Modal end -->
 
   <!-- Modal start -->
-  <div class="modal fade" id="drawModal" tabindex="-1" role="dialog" aria-hidden="true" style="width:1000px">
-    <div class="modal-dialog" style="width:1000px">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="createRoomLabel">Draw your key</h4>
-        </div>
-        <div class="modal-body">
-          <div id="cursors">
-           <!-- The mouse pointers will be created here -->
-          </div>
-          <canvas id="paper" width="1000px" height="600px">
-            Your browser needs to support canvas for this to work!
-          </canvas>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-lg btn-default" id="clear" >Clear</button>
-          <button data-dismiss="modal" id="saveKey" class="btn btn-success btn-lg">Save key</button>
 
-        </div>
-      </div>
-    </div>
-  </div>
   <!-- Modal end -->
 
   <!-- Modal start -->
-  <div class="modal fade" id="tradeModal" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
+  <div class="modal fade" id="tradeModal" role="dialog" aria-hidden="true" style="700px">
+    <div class="modal-dialog" style="700px">
+      <div class="modal-content" style="700px">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title" id="createRoomLabel">Setting up trading room info</h4>
@@ -149,6 +124,9 @@
                 <option value="1">Seller</option>
             </select>
             <br />
+             <canvas id="paper" width="500" height="500" style="left:400px">
+            Your browser needs to support canvas for this to work!
+             </canvas>
             <br />
             Time of your trading :
             <select id="time" class="form-control input-lg">
@@ -265,6 +243,9 @@
         <div class="modal-body">
           <p>Please set your login password</p>
           <br>
+          <canvas id="paper2" width="500" height="500" style="left:400px">
+            Your browser needs to support canvas for this to work!
+          </canvas>
           <form class="form-inline" id="createRoomForm">
             Your location :
             <input type="text" class="form-control input-lg" id="seller_pass" />
