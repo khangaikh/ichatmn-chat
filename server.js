@@ -43,6 +43,8 @@ app.get('/uploads/*', function(req, res) {
 });
 
 var url = require('url');
+
+var SPEKE = require('./node_modules/speke/index');
 		
 app.get('/', function(req, res, next) {
     console.log('Current url : '+ req.url);
