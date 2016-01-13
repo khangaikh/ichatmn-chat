@@ -462,7 +462,9 @@ io.sockets.on("connection", function (socket) {
 					var alice_secret = alice.computeSecret(bob.getPublicKey(), null, 'hex');
 					var bob_secret = bob.computeSecret(alice.getPublicKey(), null, 'hex');
 					console.log("Msg in Deffie Hellman public key");
-					console.log(alice_secret.getPublicKey());
+					console.log(alice.getPublicKey());
+					console.log("Msg in Deffie Hellman secret key");
+					console.log(alice_secret);
 					// We should now have the same shared secret. 
 					console.log(alice_secret.length);
 					if(alice_secret === bob_secret){
