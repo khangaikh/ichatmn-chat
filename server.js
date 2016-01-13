@@ -52,7 +52,7 @@ app.get('/', function(req, res, next) {
 
 server.listen(app.get('port'), app.get('ipaddr'), function(){
 
-	console.log('Express server listening on  IP: ' + app.get('ipaddr') + ' and port ' + app.get('port')) ;
+	console.log('Express server listening on   IP: ' + app.get('ipaddr') + ' and port ' + app.get('port')) ;
 }); 
 
 io.set("log level", 1);
