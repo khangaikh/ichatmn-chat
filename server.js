@@ -467,9 +467,9 @@ io.sockets.on("connection", function (socket) {
 					console.log(alice_secret);
 					// We should now have the same shared secret. 
 					console.log(alice_secret.length);
-					if(alice_secret === bob_secret){
-						io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], msg,0);
-					}
+					//if(alice_secret === bob_secret){
+					io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], msg,0);
+					//}
 				}
 				
 				socket.emit("isTyping", false);
