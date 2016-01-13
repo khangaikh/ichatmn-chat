@@ -541,7 +541,7 @@ io.sockets.on("connection", function (socket) {
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 4);
 				}
 
-				var str6 = "localhost:3001?id=";
+				var str6 = "localhost:3001/?id=";
 				if(msg.indexOf(str6) != -1){
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 5);
 				}
