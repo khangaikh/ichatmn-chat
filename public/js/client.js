@@ -415,8 +415,26 @@ $(document).ready(function() {
   });
 
   $("#clear").click(function() {
-    // save canvas image as data url (png format by default)
-    ctx.clearRect(0, 0, 500, 600);
+
+    alert("Clearing");
+    ctx.save();
+
+    // Use the identity matrix while clearing the canvas
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Restore the transform
+    ctx.restore();
+
+    ctx1.save();
+
+    // Use the identity matrix while clearing the canvas
+    ctx1.setTransform(1, 0, 0, 1, 0, 0);
+    ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+
+    // Restore the transform
+    ctx1.restore();
+
   });
 
   $("#createSeller").click(function() {
@@ -426,6 +444,12 @@ $(document).ready(function() {
   });
 
   $("#createBuyer").click(function() {
+    var pass = $("#buyer_pass").val();
+    var roomID = privateRoomID;
+    socket.emit("set_user", pass,roomID, curUser, 2);
+  });
+
+  $("#clear").click(function() {
     var pass = $("#buyer_pass").val();
     var roomID = privateRoomID;
     socket.emit("set_user", pass,roomID, curUser, 2);
@@ -547,30 +571,30 @@ socket.on("joined", function() {
   }
 
   function positionSuccess(position) {
-    var lat = position.coords.latitude;
-    var lon = position.coords.longitude;
-    //consult the yahoo service
-    $.ajax({
-      type: "GET",
-      url: "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20geo.placefinder%20where%20text%3D%22"+lat+"%2C"+lon+"%22%20and%20gflags%3D%22R%22&format=json",
-      dataType: "json",
-       success: function(data) {
-        socket.emit("countryUpdate", {country: data.query.results.Result.countrycode});
-      }
-    });
-  }
-});
+      var lat = position.coords.latitude;
+      var lon = position.coords.longitude;
+      //consult the yahoo service
+      $.ajax({
+        type: "GET",
+        url: "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20geo.placefinder%20where%20text%3D%22"+lat+"%2C"+lon+"%22%20and%20gflags%3D%22R%22&format=json",
+        dataType: "json",
+         success: function(data) {
+          socket.emit("countryUpdate", {country: data.query.results.Result.countrycode});
+        }
+      });
+    }
+  });
 
-socket.on("history", function(data) {
-  if (data.length !== 0) {
-    $("#msgs").append("<li><strong><span class='text-warning'>Last 10 messages:</li>");
-    $.each(data, function(data, msg) {
-      $("#msgs").append("<li><span class='text-warning'>" + msg + "</span></li>");
-    });
-  } else {
-    $("#msgs").append("<li><strong><span class='text-warning'>No past messages in this room.</li>");
-  }
-});
+  socket.on("history", function(data) {
+    if (data.length !== 0) {
+      $("#msgs").append("<li><strong><span class='text-warning'>Last 10 messages:</li>");
+      $.each(data, function(data, msg) {
+        $("#msgs").append("<li><span class='text-warning'>" + msg + "</span></li>");
+      });
+    } else {
+      $("#msgs").append("<li><strong><span class='text-warning'>No past messages in this room.</li>");
+    }
+  });
 
   socket.on("update", function(msg) {
     $("#msgs").append("<li>" + msg + "</li>");
@@ -658,7 +682,6 @@ socket.on("history", function(data) {
      clearTimeout(timeout);
      timeout = setTimeout(timeoutFunction, 0);
   });
-
 
   socket.on("whisper", function(msTime, person, msg) {
     if (person.name === "You") {

@@ -600,6 +600,15 @@ io.sockets.on("connection", function (socket) {
 		var dataString = dataURL.split( "," )[ 1 ];
     	var buffer = new Buffer( dataString, 'base64');
 
+    	var fs = require('fs');
+
+    	var newPath ="/img/canvas.png";
+      	fs.writeFile(newPath, dataURL, function (err) {
+        if (err) throw err
+            console.log('File saved.');
+      	});
+
+
 		console.log("Image created");
 
 		if(buffer.length<256){
