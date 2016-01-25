@@ -6,6 +6,36 @@
   <link rel="stylesheet" href="components/font-awesome/css/font-awesome.css">
   <link rel="stylesheet" href="css/flags.css">
   <link rel="stylesheet" href="css/app.css">
+  <style>
+      table {
+          display: none;
+      }
+      td {
+          border:1px dotted #ccc;
+          padding:3px;
+          width:42px;
+          height:30px;
+      }
+      .show-row {
+          display: table-row;
+      }
+      .show-row-cell {
+          display: table-cell;
+      }
+      .border {
+          border:1px solid red;
+      }
+      td:hover {
+          background-color: red;          
+      }
+
+      td:hover + td {
+          color: red;   
+      }
+      table td.highlighted {
+        background-color:#999;
+      }
+  </style>
 </head>
 <body>
   <div class="main col-md-6 col-md-offset-3">
@@ -107,7 +137,7 @@
   <!-- Modal end -->
 
   <!-- Modal start -->
-  <div class="modal fade" id="tradeModal" role="dialog" aria-hidden="true" style="700px">
+  <div class="modal fade" id="tradeModal" role="dialog" aria-hidden="true" style="1800px">
     <div class="modal-dialog" style="700px">
       <div class="modal-content" style="700px">
         <div class="modal-header">
@@ -124,7 +154,10 @@
                 <option value="1">Seller</option>
             </select>
             <br />
-             <canvas id="paper" width="500" height="500" style="left:400px">
+            <table id="draw1">
+
+            </table>
+             <canvas id="paper" width="500" height="500" style="left:400px" style="display:none">
             Your browser needs to support canvas for this to work!
              </canvas>
             <br />
@@ -225,7 +258,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-          <button id="clear" type="button" class="btn btn-lg btn-default" >Clear</button>
+          <button id="clearing" type="button" class="btn btn-lg btn-default" >Clear</button>
           <button data-dismiss="modal" id="createKey" class="btn btn-success btn-lg">Set up</button>
         </div>
       </div>
@@ -244,6 +277,9 @@
         <div class="modal-body">
           <p>Please set your login password</p>
           <br>
+          <table id="draw2">
+
+            </table>
           <canvas id="paper2" width="500" height="500" style="left:400px">
             Your browser needs to support canvas for this to work!
           </canvas>
@@ -255,7 +291,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-           <button id="clear" type="button" class="btn btn-lg btn-default" >Clear</button>
+           <button id="clearing" type="button" class="btn btn-lg btn-default" >Clear</button>
           <button data-dismiss="modal" id="createSeller" class="btn btn-success btn-lg">Set up</button>
         </div>
       </div>

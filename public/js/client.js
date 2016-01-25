@@ -87,9 +87,85 @@ function hello(caller) {
     zeroPad(d.getSeconds(), 2) + " ";
 }
 
-
+ 
 $(document).ready(function() {
 
+  var table = $('#draw1')
+
+  var t = "<tr>"
+  for (var i = 1; i <= 20; i++) {
+      t += "<td class='border'>" + i
+  }
+  for (var j = 1; j <= 20; j++) {
+      t += "<tr>"
+      for (var i = 1; i <= 20; i++) {
+          t += "<td>"
+      }
+  }
+  table.html(t).show();
+
+  var table = $('#draw2')
+
+  var t = "<tr>"
+  for (var i = 1; i <= 20; i++) {
+      t += "<td class='border'>" + i
+  }
+  for (var j = 1; j <= 20; j++) {
+      t += "<tr>"
+      for (var i = 1; i <= 20; i++) {
+          t += "<td>"
+      }
+  }
+  table.html(t).show();
+
+
+  var isMouseDown = false,
+    isHighlighted;
+  $("#draw1 td")
+    .mousedown(function () {
+      isMouseDown = true;
+      $(this).toggleClass("highlighted");
+      isHighlighted = $(this).hasClass("highlighted");
+      return false; // prevent text selection
+    })
+    .mouseover(function () {
+      if (isMouseDown) {
+        $(this).toggleClass("highlighted", isHighlighted);
+      }
+    })
+    .bind("selectstart", function () {
+      return false;
+    })
+
+  $(document)
+    .mouseup(function () {
+      isMouseDown = false;
+    });
+
+
+   var isMouseDown = false,
+    isHighlighted;
+  $("#draw2 td")
+    .mousedown(function () {
+      isMouseDown = true;
+      $(this).toggleClass("highlighted");
+      isHighlighted = $(this).hasClass("highlighted");
+      return false; // prevent text selection
+    })
+    .mouseover(function () {
+      if (isMouseDown) {
+        $(this).toggleClass("highlighted", isHighlighted);
+      }
+    })
+    .bind("selectstart", function () {
+      return false;
+    })
+
+  $(document)
+    .mouseup(function () {
+      isMouseDown = false;
+    }); 
+    
   // This demo depends on the canvas element
   if(!('getContext' in document.createElement('canvas'))){
     alert('Sorry, it looks like your browser does not support canvas!');
@@ -108,10 +184,12 @@ $(document).ready(function() {
   var doc = $(document);
   var win = $(window);
   var canvas = $('#paper');
+  canvas.hide();
 
   var ctx = canvas[0].getContext('2d');
 
   var canvas1 = $('#paper2');
+  canvas1.hide();
 
   var ctx1 = canvas1[0].getContext('2d');
  
@@ -414,30 +492,30 @@ $(document).ready(function() {
     // save canvas image as data url (png format by default)
   });
 
-  $("#clear").click(function() {
+  $("#clearing").click(function() {
 
-    alert("Clearing");
-    ctx.save();
-
-    // Use the identity matrix while clearing the canvas
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Restore the transform
-    ctx.restore();
-
-    ctx1.save();
-
-    // Use the identity matrix while clearing the canvas
-    ctx1.setTransform(1, 0, 0, 1, 0, 0);
-    ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
-
-    // Restore the transform
-    ctx1.restore();
+    $('table tr td').each(function () {
+      $(this).removeClass('highlighted');
+    });
 
   });
 
   $("#createSeller").click(function() {
+
+    var myTableArray = [];
+
+    $("#draw2 tr").each(function() {
+        var arrayOfThisRow = [];
+        var tableData = $(this).find('td');
+
+        if (tableData.hasClass('highlighted')) {
+            tableData.each(function() { arrayOfThisRow.push(1); });
+        }else{
+            tableData.each(function() { arrayOfThisRow.push(0); });
+        }
+        myTableArray.push(arrayOfThisRow);
+    });
+
     var pass = $("#seller_pass").val();
     var roomID = privateRoomID;
     socket.emit("set_user", pass,roomID, curUser, 1);
@@ -456,6 +534,22 @@ $(document).ready(function() {
   });
 
   $("#createKey").click(function() {
+
+    var myTableArray = [];
+
+    $("#draw1 tr").each(function() {
+        var arrayOfThisRow = [];
+        var tableData = $(this).find('td');
+
+        if (tableData.hasClass('highlighted')) {
+            tableData.each(function() { arrayOfThisRow.push(1); });
+        }else{
+            tableData.each(function() { arrayOfThisRow.push(0); });
+        }
+        myTableArray.push(arrayOfThisRow);
+    });
+
+    alert(myTableArray);
     var interest = $("#interest").val();
     var time = $("#time").val();
     var minute = $("#minute").val();
