@@ -92,13 +92,10 @@ $(document).ready(function() {
 
   var table = $('#draw1')
 
-  var t = "<tr>"
-  for (var i = 1; i <= 20; i++) {
-      t += "<td class='border'>" + i
-  }
-  for (var j = 1; j <= 20; j++) {
+  var t = "<tr>";
+  for (var j = 1; j <= 30; j++) {
       t += "<tr>"
-      for (var i = 1; i <= 20; i++) {
+      for (var i = 1; i <= 30; i++) {
           t += "<td>"
       }
   }
@@ -107,9 +104,6 @@ $(document).ready(function() {
   var table = $('#draw2')
 
   var t = "<tr>"
-  for (var i = 1; i <= 20; i++) {
-      t += "<td class='border'>" + i
-  }
   for (var j = 1; j <= 20; j++) {
       t += "<tr>"
       for (var i = 1; i <= 20; i++) {
