@@ -1,6 +1,6 @@
 var express = require('express')
 , app = express()
-, server = require('http').createServer(app)
+, server = app.listen(3000)
 , io = require("socket.io").listen(server)
 , dl  = require('delivery')
 , fs  = require('fs')
