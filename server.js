@@ -671,7 +671,7 @@ io.sockets.on("connection", function (socket) {
 		//Clearing all private chat information
 		//if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
 		//	purge(socket, "disconnect",chat_id);
-			socket.emit("update_private_msg", "localhost:3001?id="+roomID+"");
+			socket.emit("update_private_msg", "http://localhost:3001/?id="+roomID+"");
 		//}
 	});
 
