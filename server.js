@@ -1,6 +1,6 @@
 var express = require('express')
 , app = express()
-, server = app.listen(3000)
+, server = require('http').createServer(app)
 , io = require("socket.io").listen(server)
 , dl  = require('delivery')
 , fs  = require('fs')
@@ -15,7 +15,7 @@ var ip_address = '/opt/lampp/htdocs';
 var internal = 'localhost';
 
 app.configure(function() {
-	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
+	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
   	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "159.203.105.18");
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
