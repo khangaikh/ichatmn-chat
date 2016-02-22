@@ -95,7 +95,7 @@ $(document).ready(function() {
   var t = "<tr>";
   for (var j = 1; j <= 30; j++) {
       t += "<tr>"
-      for (var i = 1; i <= 30; i++) {
+      for (var i = 1; i <= 20; i++) {
           t += "<td>"
       }
   }
