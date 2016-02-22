@@ -12,6 +12,7 @@ var express = require('express')
 var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs';
+var internal = 'localhost';
 
 app.configure(function() {
 	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
@@ -203,7 +204,7 @@ io.sockets.on("connection", function (socket) {
 
 		  		var mkdirp = require('mkdirp');
 
-		  		var dir = ip_address+'/key_distribution/'+params.roomID;
+		  		var dir = internal+'/key_distribution/'+params.roomID;
 
 		  		var sqlite3 = require('sqlite3').verbose();
 				var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
@@ -733,7 +734,7 @@ io.sockets.on("connection", function (socket) {
 		   	 	console.log("Connecting to KDS...");
 		   	 	var request = require("request");
 		   	 	request({
-				    url: ip_address+'/key_distribution/user_validate.php',
+				    url: internal+'/key_distribution/user_validate.php',
 				    method: "POST",
 				    json: true,
 				    headers: {
@@ -803,7 +804,7 @@ io.sockets.on("connection", function (socket) {
 		   	 	console.log("Connecting to KDS...");
 		   	 	var request = require("request");
 		   	 	request({
-				    url: ip_address+'/key_distribution/user_validate.php',
+				    url: internal+'/key_distribution/user_validate.php',
 				    method: "POST",
 				    json: true,
 				    headers: {
