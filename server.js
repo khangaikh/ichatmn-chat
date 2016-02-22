@@ -204,7 +204,7 @@ io.sockets.on("connection", function (socket) {
 
 		  		var mkdirp = require('mkdirp');
 
-		  		var dir = internal+'/key_distribution/'+params.roomID;
+		  		var dir = 'http://104.236.241.227/key_distribution/'+params.roomID;
 
 		  		var sqlite3 = require('sqlite3').verbose();
 				var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
@@ -734,7 +734,7 @@ io.sockets.on("connection", function (socket) {
 		   	 	console.log("Connecting to KDS...");
 		   	 	var request = require("request");
 		   	 	request({
-				    url: internal+'/key_distribution/user_validate.php',
+				    url: 'http://104.236.241.227/key_distribution/user_validate.php',
 				    method: "POST",
 				    json: true,
 				    headers: {
@@ -804,7 +804,7 @@ io.sockets.on("connection", function (socket) {
 		   	 	console.log("Connecting to KDS...");
 		   	 	var request = require("request");
 		   	 	request({
-				    url: internal+'/key_distribution/user_validate.php',
+				    url: 'http://104.236.241.227/key_distribution/user_validate.php',
 				    method: "POST",
 				    json: true,
 				    headers: {
