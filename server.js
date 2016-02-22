@@ -346,10 +346,10 @@ io.sockets.on("connection", function (socket) {
 		  return dec;
 		}
 
-		_.find(people, function(key,value) {
+		/*_.find(people, function(key,value) {
 			if (key.name.toLowerCase() === name.toLowerCase())
 				return exists = true;
-		});
+		});*/
 	
 		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": chat_id};
 		var message = "You have connected to the server.";
