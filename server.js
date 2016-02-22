@@ -16,7 +16,7 @@ var internal = 'localhost';
 
 app.configure(function() {
 	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
-  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "http://159.203.105.18");
+  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "159.203.105.18");
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
 	app.use(express.static(__dirname + '/public'));
