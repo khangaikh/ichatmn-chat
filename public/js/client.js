@@ -173,7 +173,7 @@ $(document).ready(function() {
   }
 
   //setup "global" variables first
-  var socket = io.connect("127.0.0.1:3000");
+  var socket = io.connect("159.203.105.18:3000");
   var myRoomID = null;
   var privateRoomID = null;
   var curUser = null;
