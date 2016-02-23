@@ -420,12 +420,10 @@ io.sockets.on("connection", function (socket) {
 	});
 	
 	socket.on("send", function(msTime, encrypted) {
-
 		var crypto = require('crypto'),
     	algorithm = 'aes-256-ctr',
-    	password = 'd6F3Efeq';
-
-    	var decipher = crypto.createDecipher(algorithm,password)
+    	password = 'd6F3Efeq'
+		var decipher = crypto.createDecipher(algorithm,password)
   		var msg = decipher.update(encrypted,'hex','utf8')
   		msg += decipher.final('utf8');
 
@@ -433,8 +431,7 @@ io.sockets.on("connection", function (socket) {
 		var re = /^[w]:.*:/;
 		var whisper = re.test(msg);
 		var whisperStr = msg.split(":");
-		var found = false;	delivery.on('receive.success',function(file){
-
+		var found = false;
 		if (whisper) {
 			var whisperTo = whisperStr[1];
 			var keys = Object.keys(people);
