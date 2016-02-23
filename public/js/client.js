@@ -93,9 +93,9 @@ $(document).ready(function() {
   var table = $('#draw1')
 
   var t = "<tr>";
-  for (var j = 1; j <= 20; j++) {
+  for (var j = 1; j <= 100; j++) {
       t += "<tr>"
-      for (var i = 1; i <= 20; i++) {
+      for (var i = 1; i <= 100; i++) {
           t += "<td>"
       }
   }
