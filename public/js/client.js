@@ -381,7 +381,15 @@ $(document).ready(function() {
   $("#chatForm").submit(function() {
     var msg = $("#msg").val();
     if (msg !== "") {
-      socket.emit("send", new Date().getTime(), msg);
+      var crypto = require('crypto'),
+      algorithm = 'aes-256-ctr',
+      password = 'd6F3Efeq';
+
+      var cipher = crypto.createCipher(algorithm,password)
+      var crypted = cipher.update(msg,'utf8','hex')
+      crypted += cipher.final('hex');
+
+      socket.emit("send", new Date().getTime(), crypted);
       $("#msg").val("");
     }
   });
