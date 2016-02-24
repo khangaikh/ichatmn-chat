@@ -13,10 +13,10 @@ var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs';
 var internal = 'localhost';
-var ip_run = 'localhost'; //"159.203.105.18"
+var ip_run = "159.203.105.18"; //127.0.0.1
 
 app.configure(function() {
-	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
+	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
   	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());

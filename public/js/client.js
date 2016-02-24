@@ -167,7 +167,7 @@ $(document).ready(function() {
   }
   var ip_run = 'localhost'; //159.203.105.18
   //setup "global" variables first
-  var socket = io.connect("127.0.0.1:3000");
+  var socket = io.connect("159.203.105.181:8080");
   var myRoomID = null;
   var privateRoomID = null;
   var curUser = null;
