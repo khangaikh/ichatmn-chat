@@ -17,7 +17,7 @@ var ip_run = "159.203.105.18"; //127.0.0.1
 
 app.configure(function() {
 	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
-  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
+  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "159.203.105.18");
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
 	app.use(express.static(__dirname + '/public'));
@@ -560,7 +560,7 @@ io.sockets.on("connection", function (socket) {
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 4);
 				}
 
-				var str6 = "localhost:3001/?id=";
+				var str6 = "http://159.203.105.181:8081/?id=";
 				if(msg.indexOf(str6) != -1){
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 5);
 				}
@@ -680,7 +680,7 @@ io.sockets.on("connection", function (socket) {
 		//Clearing all private chat information
 		//if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
 		//	purge(socket, "disconnect",chat_id);
-			socket.emit("update_private_msg", "http://localhost:3001/?id="+roomID+"");
+			socket.emit("update_private_msg", "http://159.203.105.181:8081/?id="+roomID+"");
 		//}
 	});
 
