@@ -13,10 +13,11 @@ var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs';
 var internal = 'localhost';
+var ip_run = 'localhost'; //"159.203.105.18"
 
 app.configure(function() {
-	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
-  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "159.203.105.18");
+	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 3000);
+  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
 	app.use(express.static(__dirname + '/public'));
@@ -710,7 +711,7 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//User save functions
-	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser, dataURL) {
+	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser, str) {
 
 
 
@@ -720,13 +721,13 @@ io.sockets.on("connection", function (socket) {
 		if(interest == 2){
 			console.log("Buyer is setting up"); 
 
-			var dataString = dataURL.split( "," )[ 1 ];
-    		var buffer = new Buffer( dataString, 'base64');
+			//var dataString = dataURL.split( "," )[ 1 ];
+    		//var buffer = new Buffer( dataString, 'base64');
 
 			console.log("Buyer drawing selected image created");
-			console.log(dataString);
+			console.log(str);
 
-			if(buffer.length<256){
+			if(str.length<256){
 			//Image is smaller than 256 bit alert draw agian
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 			}else{
@@ -736,7 +737,7 @@ io.sockets.on("connection", function (socket) {
 				var requestData = {
 		            "user": curUser,
 		            "pass": pass,
-		            "image": dataString,
+		            "image": str,
 		            "solutions": 2
 		   	 	}
 		   	 	console.log("Connecting to KDS...");
@@ -756,8 +757,8 @@ io.sockets.on("connection", function (socket) {
 			        else {
 			        	console.log("Failed to connect to KDS...");
 			            console.log("error: " + error)
-			            console.log("response.statusCode: " + response.statusCode)
-			            console.log("response.statusText: " + response.statusText)
+			            //console.log("response.statusCode: " + response.statusCode)
+			            //console.log("response.statusText: " + response.statusText)
 			     	}
 				});
 				var encrypt_string = pass +"*"+ roomID +"*"+ time +"*"+minute;
@@ -772,13 +773,14 @@ io.sockets.on("connection", function (socket) {
 
 				console.log('Encrypted secret key: ', crypted);
 				console.log('Saving secret key: ', crypted);
-				db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key) VALUES (?,?,?,?,?,?)", {
+				db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key, secret_draw_buyer) VALUES (?,?,?,?,?,?,?)", {
 		          1: curUser,
 		          2: roomID,
 		          3: time,
 		          4: minute,
 		          5: pass,
-		          6: crypted
+		          6: crypted,
+		          7: str
 		      	});
 		      	db.close();
 		      	socket.emit("update_private_msg", "Notify to>Seller");
@@ -790,13 +792,13 @@ io.sockets.on("connection", function (socket) {
 		}else{
 			console.log("Seller is setting up");
 
-			var dataString = dataURL.split( "," )[ 1 ];
-    		var buffer = new Buffer( dataString, 'base64');
+			//var dataString = dataURL.split( "," )[ 1 ];
+    		//var buffer = new Buffer( dataString, 'base64');
 
 			console.log("Seller drawing selected image created");
 			console.log(dataString);
 
-			if(buffer.length<256){
+			if(str.length<256){
 			//Image is smaller than 256 bit alert draw agian
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 			}else{
@@ -806,7 +808,7 @@ io.sockets.on("connection", function (socket) {
 				var requestData = {
 		            "user": curUser,
 		            "pass": pass,
-		            "image": dataString,
+		            "image": str,
 		            "solutions": 2
 		   	 	}
 		   	 	console.log("Connecting to KDS...");
@@ -843,13 +845,13 @@ io.sockets.on("connection", function (socket) {
 				console.log('Encrypted secret key: ', crypted);
 				console.log('Saving secret key: ', crypted);
 	
-				db.run("INSERT INTO tickets (seller, public_key, time, minute, seller_key) VALUES (?,?,?,?,?,)", {
+				db.run("INSERT INTO tickets (seller, public_key, time, minute, seller_key, secret_draw_seller) VALUES (?,?,?,?,?,?)", {
 		          1: curUser,
 		          2: roomID,
 		          3: time,
 		          4: minute,
 		          5: pass,
-		          6: crypted
+		          6: str
 		      	});
 		      	db.close();
 		      	socket.emit("update_private_msg", "Notify to>Buyer");
@@ -859,24 +861,26 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//User setting functions
-	socket.on("set_user", function( pass, roomID, curUser, interest) {
+	socket.on("set_user", function( pass, roomID, curUser, str,interest) {
 		var sqlite3 = require('sqlite3').verbose();
 		var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
-			db.run("UPDATE tickets SET seller =?, seller_key =? WHERE public_key=?", {
+			db.run("UPDATE tickets SET seller =?, seller_key =?, secret_draw_seller=? WHERE public_key=?", {
 	          1: curUser,
 	          2: pass,
-	          3: roomID
+	          3: str,
+	          4: roomID
 	      	});
 	      	db.close();
 	      	socket.emit("update_private_msg", "File upload<Seller");
 		}else{
 			console.log("Buyer is setting up");
-			db.run("UPDATE tickets SET buyer =?, buyer_key =? WHERE public_key=?", {
+			db.run("UPDATE tickets SET buyer =?, buyer_key =? , secret_draw_buyer=? WHERE public_key=?", {
 	          1: curUser,
 	          2: pass,
-	          3: roomID
+	          3: str,
+	          4: roomID
 	      	});
 	      	db.close();
 	      	socket.emit("update_private_msg", "File upload<Seller");

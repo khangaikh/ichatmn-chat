@@ -104,9 +104,9 @@ $(document).ready(function() {
   var table = $('#draw2')
 
   var t = "<tr>"
-  for (var j = 1; j <= 20; j++) {
+  for (var j = 1; j <= 100; j++) {
       t += "<tr>"
-      for (var i = 1; i <= 20; i++) {
+      for (var i = 1; i <= 100; i++) {
           t += "<td>"
       }
   }
@@ -165,9 +165,9 @@ $(document).ready(function() {
     alert('Sorry, it looks like your browser does not support canvas!');
     return false;
   }
-
+  var ip_run = 'localhost'; //159.203.105.18
   //setup "global" variables first
-  var socket = io.connect("159.203.105.18:8080");
+  var socket = io.connect("127.0.0.1:3000");
   var myRoomID = null;
   var privateRoomID = null;
   var curUser = null;
@@ -210,6 +210,7 @@ $(document).ready(function() {
     });
  
     delivery.on('send.success',function(fileUID){
+      $('#uploadFile').modal('toggle');
       console.log("file was successfully sent.");
     });
 
@@ -517,10 +518,10 @@ $(document).ready(function() {
         }
         myTableArray.push(arrayOfThisRow);
     });
-
+    var str = myTableArray.toString();
     var pass = $("#seller_pass").val();
     var roomID = privateRoomID;
-    socket.emit("set_user", pass,roomID, curUser, 1);
+    socket.emit("set_user", pass,roomID, curUser, str,1);
   });
 
   $("#createBuyer").click(function() {
@@ -551,7 +552,7 @@ $(document).ready(function() {
         myTableArray.push(arrayOfThisRow);
     });
 
-    alert(myTableArray);
+    var str = myTableArray.toString();
     var interest = $("#interest").val();
     var time = $("#time").val();
     var minute = $("#minute").val();
@@ -559,7 +560,7 @@ $(document).ready(function() {
     var roomID = privateRoomID;
     var dataURL = canvas[0].toDataURL();
 
-    socket.emit("save_user", interest, time, minute, pass, roomID, curUser, dataURL, function(data) {
+    socket.emit("save_user", interest, time, minute, pass, roomID, curUser, str, function(data) {
        alert(data);
        if (data == 1) {
           //Seller
