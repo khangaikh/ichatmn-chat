@@ -796,7 +796,7 @@ io.sockets.on("connection", function (socket) {
     		//var buffer = new Buffer( dataString, 'base64');
 
 			console.log("Seller drawing selected image created");
-			console.log(dataString);
+			console.log(str);
 
 			if(str.length<256){
 			//Image is smaller than 256 bit alert draw agian
