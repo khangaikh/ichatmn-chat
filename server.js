@@ -13,11 +13,11 @@ var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs';
 var internal = 'localhost';
-var ip_run = "159.203.105.18"; //127.0.0.1
+var ip_run = "192.168.0.10"; //127.0.0.1
 
 app.configure(function() {
 	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
-  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "159.203.105.18");
+  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
 	app.use(express.static(__dirname + '/public'));
@@ -196,7 +196,7 @@ io.sockets.on("connection", function (socket) {
 			
 			var sqlite3 = require('sqlite3').verbose();
 
-			var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
+			var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 			
 		 	if(err){
 		    	console.log('File could not be saved.->');
@@ -205,10 +205,10 @@ io.sockets.on("connection", function (socket) {
 
 		  		var mkdirp = require('mkdirp');
 
-		  		var dir = 'http://104.236.241.227/key_distribution/'+params.roomID;
+		  		var dir = 'http://localhost/key_distribution/'+params.roomID;
 
 		  		var sqlite3 = require('sqlite3').verbose();
-				var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
+				var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
 		  		db.run("UPDATE tickets SET secret_name =? WHERE public_key=?", {
 		          1: file.name,
@@ -311,7 +311,7 @@ io.sockets.on("connection", function (socket) {
 		/*Getting user information from database*/
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 		var username="bulgaa";
 		
 		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
@@ -329,7 +329,7 @@ io.sockets.on("connection", function (socket) {
         var request = require('request');
 			request.post({
 			  headers: {'content-type' : 'application/x-www-form-urlencoded'},
-			  url:     'http://104.236.241.227/ichatmn-kds.php',
+			  url:     'http://localhost/ichatmn-kds.php',
 			  body:    "mes="+chat_id
 			}, function(error, response, body){
 			  console.log(body);
@@ -635,7 +635,7 @@ io.sockets.on("connection", function (socket) {
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 		}else{
 			var sqlite3 = require('sqlite3').verbose();
-			var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
+			var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
 			db.all("SELECT * FROM tickets", function(err, rows) {  
         
@@ -716,7 +716,7 @@ io.sockets.on("connection", function (socket) {
 
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
 		if(interest == 2){
 			console.log("Buyer is setting up"); 
@@ -743,7 +743,7 @@ io.sockets.on("connection", function (socket) {
 		   	 	console.log("Connecting to KDS...");
 		   	 	var request = require("request");
 		   	 	request({
-				    url: 'http://104.236.241.227/key_distribution/user_validate.php',
+				    url: 'http://localhost/key_distribution/user_validate.php',
 				    method: "POST",
 				    json: true,
 				    headers: {
@@ -814,7 +814,7 @@ io.sockets.on("connection", function (socket) {
 		   	 	console.log("Connecting to KDS...");
 		   	 	var request = require("request");
 		   	 	request({
-				    url: 'http://104.236.241.227/key_distribution/user_validate.php',
+				    url: 'http://localhost/key_distribution/user_validate.php',
 				    method: "POST",
 				    json: true,
 				    headers: {
@@ -863,7 +863,7 @@ io.sockets.on("connection", function (socket) {
 	//User setting functions
 	socket.on("set_user", function( pass, roomID, curUser, str,interest) {
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://104.236.241.227/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 		if(interest == 1){
 			console.log("Seller is setting up"); 
 			db.run("UPDATE tickets SET seller =?, seller_key =?, secret_draw_seller=? WHERE public_key=?", {
