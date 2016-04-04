@@ -11,7 +11,7 @@ var express = require('express')
 
 var multer  = require('multer');
 var done=false;
-var ip_address = '/opt/lampp/htdocs';
+var ip_address = 'smb://192.168.0.10/db/ichat.db';
 var internal = 'localhost';
 var ip_run = "192.168.0.10"; //127.0.0.1
 
@@ -176,7 +176,7 @@ function purge(s, action, chat_id) {
 
 function sqlite3_db(ip){
 	var sqlite3 = require('sqlite3').verbose();
-	var db = new sqlite3.Database(ip_address+"/ichatmn-web/ichat.db");
+	var db = new sqlite3.Database(ip_address+"/ichat.db");
 	return db;
 }
 
