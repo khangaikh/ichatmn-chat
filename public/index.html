@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="components/font-awesome/css/font-awesome.css">
   <link rel="stylesheet" href="css/flags.css">
   <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/patternLock.css">
   <style>
       table {
           display: none;
@@ -147,113 +148,64 @@
         <div class="modal-body">
           <p>You can  set up a trading room with your buyer or seller. </p>
           <br>
-          <form class="form-inline" id="createRoomForm">
+          <form class="form-inline" id="createRoomForm-1">
             Your interest type :
-            <select id="interest" class="form-control input-lg">
+            <select id="interest" class="form-control input-sm">
                 <option value="2">Buyer</option>
                 <option value="1">Seller</option>
             </select>
             <br />
-            <table id="draw1" background="http://www.travelchinaguide.com/images/map/china/china-map-9.jpg">
-
-            </table>
-             <canvas id="paper" width="500" height="500" style="left:400px" style="display:none">
+            <div id="patternHolder" class="pattern-holder patt-holder" background="http://www.travelchinaguide.com/images/map/china/china-map-9.jpg">
+            </div>
+            <canvas id="paper" width="500" height="500" style="left:400px" style="display:none">
             Your browser needs to support canvas for this to work!
-             </canvas>
+            </canvas>
             <br />
-            Time of your trading :
-            <select id="time" class="form-control input-lg">
-                <option value="1">01</option>
-                <option value="2">02</option>
-                <option value="3">03</option>
-                <option value="4">04</option>
-                <option value="5">05</option>
-                <option value="6">06</option>
-                <option value="7">07</option>
-                <option value="8">08</option>
-                <option value="9">09</option>
-                <option value="11">11</option>
-                <option value="12">12</option>
-                <option value="13">13</option>
-                <option value="14">14</option>
-                <option value="15">15</option>
-                <option value="16">16</option>
-                <option value="17">17</option>
-                <option value="18">18</option>
-                <option value="19">19</option>
-                <option value="20">20</option>
-                <option value="21">21</option>
-                <option value="22">22</option>
-                <option value="23">23</option>
-                <option value="24">24</option>
-            </select>
-            Minute :
-            <select id="minute" class="form-control input-lg">
-                <option value="1">01</option>
-                <option value="2">02</option>
-                <option value="3">03</option>
-                <option value="4">04</option>
-                <option value="5">05</option>
-                <option value="6">06</option>
-                <option value="7">07</option>
-                <option value="8">08</option>
-                <option value="9">09</option>
-                <option value="11">11</option>
-                <option value="12">12</option>
-                <option value="13">13</option>
-                <option value="14">14</option>
-                <option value="15">15</option>
-                <option value="16">16</option>
-                <option value="17">17</option>
-                <option value="18">18</option>
-                <option value="19">19</option>
-                <option value="20">20</option>
-                <option value="21">21</option>
-                <option value="22">22</option>
-                <option value="23">23</option>
-                <option value="24">24</option>
-                <option value="25">25</option>
-                <option value="26">26</option>
-                <option value="27">27</option>
-                <option value="28">28</option>
-                <option value="29">29</option>
-                <option value="30">30</option>
-                <option value="31">31</option>
-                <option value="32">32</option>
-                <option value="33">33</option>
-                <option value="34">34</option>
-                <option value="35">35</option>
-                <option value="36">36</option>
-                <option value="37">37</option>
-                <option value="38">38</option>
-                <option value="39">39</option>
-                <option value="40">40</option>
-                <option value="41">41</option>
-                <option value="42">42</option>
-                <option value="43">43</option>
-                <option value="44">44</option>
-                <option value="45">45</option>
-                <option value="46">46</option>
-                <option value="47">47</option>
-                <option value="48">48</option>
-                <option value="49">49</option>
-                <option value="50">50</option>
-                <option value="51">51</option>
-                <option value="52">52</option>
-                <option value="53">53</option>
-                <option value="54">54</option>
-                <option value="55">55</option>
-                <option value="56">56</option>
-                <option value="57">57</option>
-                <option value="58">58</option>
-                <option value="59">59</option>
-                <option value="0">00</option>
-            </select>
-             <br />
-            <br />
-            Your location :
-             <input type="text" class="form-control input-lg" id="user_pass" />
+              1. <select class="form-control input-sm" style="max-width:150px" id="">
+                <option>What is  car you want to drive?</option>
+                <option>What is  name your fans singer?</option>
+                <option>What is  favorite movie name ?</option>
+                <option>What is your oldest  grandfather’s birthday month and year?</option>
+                <option>What is name your most dislike?</option>
+                <option>Who is help you for exam when a high school?</option>
+                <option>What is the first name of the boy or girl that you first kissed?</option>
+                <option>What was your dream job as a child?</option>
+                <option>What is the middle name of your youngest child?</option>
+                <option>What school did you attend for sixth grade?</option>
+              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans1" /> <br /><br />
+              2. <select class="form-control input-sm" style="max-width:150px">
+                <option>What is  car you want to drive?</option>
+                <option>What is  name your fans singer?</option>
+                <option>What is  favorite movie name ?</option>
+                <option>What is your oldest  grandfather’s birthday month and year?</option>
+                <option>What is name your most dislike?</option>
+                <option>Who is help you for exam when a high school?</option>
+                <option>What is the first name of the boy or girl that you first kissed?</option>
+                <option>What was your dream job as a child?</option>
+                <option>What is the middle name of your youngest child?</option>
+                <option>What school did you attend for sixth grade?</option>
+              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans2" /> <br /><br />
+              3. <select class="form-control input-sm" style="max-width:150px">
+                <option>What is  car you want to drive?</option>
+                <option>What is  name your fans singer?</option>
+                <option>What is  favorite movie name ?</option>
+                <option>What is your oldest  grandfather’s birthday month and year?</option>
+                <option>What is name your most dislike?</option>
+                <option>Who is help you for exam when a high school?</option>
+                <option>What is the first name of the boy or girl that you first kissed?</option>
+                <option>What was your dream job as a child?</option>
+                <option>What is the middle name of your youngest child?</option>
+                <option>What school did you attend for sixth grade?</option>
+              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans3" />
           </form>
+          <br />
+          <button id="sendImage" class="btn btn-success btn-sm pull-right" style="margin-right:100px">Next</button>
+          <div id="image-upload-1" style="display:none">
+            <form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
+              <input type="file" class="form-control input-lg" name="userPhoto" />
+              <input type="submit" class="btn btn-lg btn-sm" value="Upload Image" id="upload"/>
+            </form>
+          </div>
           <br>  
         </div>
         <div class="modal-footer">
@@ -278,8 +230,7 @@
           <p>Please set your login password</p>
           <br>
           <table id="draw2" background="http://www.travelchinaguide.com/images/map/china/china-map-9.jpg">
-
-            </table>
+          </table>
           <canvas id="paper2" width="500" height="500" style="left:400px">
             Your browser needs to support canvas for this to work!
           </canvas>
@@ -358,6 +309,7 @@
   <script src="components/bootstrap/dist/js/bootstrap.js"></script>
   <script src="/socket.io/socket.io.js"></script>  
   <script src="js/client.js"></script>
+  <script src="js/patternLock.js"></script>
   <script src="js/delivery.js"></script>
 </body>
 </html>

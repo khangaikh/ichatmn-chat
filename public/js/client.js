@@ -90,8 +90,9 @@ function hello(caller) {
  
 $(document).ready(function() {
 
-  var table = $('#draw1')
-
+  var lock= new PatternLock('#patternHolder',{matrix:[5,5]});
+  //var lock= new PatternLock('#patternHolder1',{matrix:[5,5]});
+  var table = $('#draw1');
   var t = "<tr>";
   for (var j = 1; j <= 100; j++) {
       t += "<tr>"
@@ -461,6 +462,48 @@ $(document).ready(function() {
     var roomExists = false;
     var roomName = $("#createRoomName").val();
     var invite = $("#users").val();
+    socket.emit("check", roomName, function(data) {
+      roomExists = data.result;
+       if (roomExists) {
+          $("#errors").empty();
+          $("#errors").show();
+          $("#errors").append("Room <i>" + roomName + "</i> already exists");
+        } else {      
+        if (roomName.length > 0) { //also check for roomname
+          socket.emit("createRoom", roomName, invite);
+          $("#errors").empty();
+          $("#private_actions").show();
+          $("#errors").hide();
+          }
+        }
+    });
+  });
+
+  $("#sendImage").click(function(e) {
+    var a1 = $("#ans1").val();
+    var a2 = $("#ans2").val();
+    var a3 = $("#ans3").val();
+
+    if(a1=="" || a2=="" || a3==""){
+        alert("Please fill your answers");
+        e.preventDefault();
+        return;
+    }else{
+      $("#createRoomForm-1").hide();
+      $("#sendImage").hide();
+      $("#image-upload-1").show();
+      var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a3;
+      var win = window.open(url, '_blank');
+      if(win){
+          //Browser has allowed it to be opened
+          win.focus();
+      }else{
+          //Broswer has blocked it
+          alert('Please allow popups for this site');
+      }
+    }
+    
+
     socket.emit("check", roomName, function(data) {
       roomExists = data.result;
        if (roomExists) {
