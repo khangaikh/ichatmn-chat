@@ -134,10 +134,6 @@
   <!-- Modal end -->
 
   <!-- Modal start -->
-
-  <!-- Modal end -->
-
-  <!-- Modal start -->
   <div class="modal fade" id="tradeModal" role="dialog" aria-hidden="true" style="1800px">
     <div class="modal-dialog" style="700px">
       <div class="modal-content" style="700px">
@@ -155,13 +151,8 @@
                 <option value="1">Seller</option>
             </select>
             <br />
-            <div id="patternHolder" class="pattern-holder patt-holder" background="http://www.travelchinaguide.com/images/map/china/china-map-9.jpg">
-            </div>
-            <canvas id="paper" width="500" height="500" style="left:400px" style="display:none">
-            Your browser needs to support canvas for this to work!
-            </canvas>
             <br />
-              1. <select class="form-control input-sm" style="max-width:150px" id="">
+              1. <select class="form-control input-sm" style="max-width:150px">
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
                 <option>What is  favorite movie name ?</option>
@@ -198,20 +189,29 @@
                 <option>What school did you attend for sixth grade?</option>
               </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans3" />
           </form>
-          <br />
-          <button id="sendImage" class="btn btn-success btn-sm pull-right" style="margin-right:100px">Next</button>
+              <br /> 
+              
           <div id="image-upload-1" style="display:none">
-            <form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
+            <p>Please paste your chosen image link</p>
+            <input id ="userPhoto" type="text" class="form-control input-lg" name="userPhoto" />
+            <!--<form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
               <input type="file" class="form-control input-lg" name="userPhoto" />
               <input type="submit" class="btn btn-lg btn-sm" value="Upload Image" id="upload"/>
-            </form>
+            </form>-->
+            <br /> 
+          </div>
+          <div id="image-upload-2" style="display:none">
+            <div id="patternHolder" class="pattern-holder patt-holder">
+            </div>
           </div>
           <br>  
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-          <button id="clearing" type="button" class="btn btn-lg btn-default" >Clear</button>
-          <button data-dismiss="modal" id="createKey" class="btn btn-success btn-lg">Set up</button>
+          <button id="sendImage" class="btn btn-lg btn-success">Next</button>
+           <button id="sendImage1" class="btn btn-lg btn-success" style="display:none">Next</button>
+          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal" id="discard">Discard</button>
+          <button id="clearing" type="button" class="btn btn-lg btn-default" style="display:none">Clear</button>
+          <button data-dismiss="modal" id="createKey" class="btn btn-success btn-lg" style="display:none">Set up</button>
         </div>
       </div>
     </div>
@@ -220,63 +220,84 @@
 
   <!-- Modal start -->
   <div class="modal fade" id="modalSeller" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
+    <div class="modal-dialog" style="700px">
+      <div class="modal-content" style="700px">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="createRoomLabel">Seller setting up trading room info</h4>
+          <h4 class="modal-title" id="createRoomLabel">Setting up trading room info</h4>
         </div>
         <div class="modal-body">
-          <p>Please set your login password</p>
+          <p>You can  set up a trading room with your buyer or seller. </p>
           <br>
-          <table id="draw2" background="http://www.travelchinaguide.com/images/map/china/china-map-9.jpg">
-          </table>
-          <canvas id="paper2" width="500" height="500" style="left:400px">
-            Your browser needs to support canvas for this to work!
-          </canvas>
-          <form class="form-inline" id="createRoomForm">
-            Your location :
-            <input type="text" class="form-control input-lg" id="seller_pass" />
+          <form class="form-inline" id="createRoomForm-2">
+            <br />
+              1. <select class="form-control input-sm" style="max-width:150px" id="">
+                <option>What is  car you want to drive?</option>
+                <option>What is  name your fans singer?</option>
+                <option>What is  favorite movie name ?</option>
+                <option>What is your oldest  grandfather’s birthday month and year?</option>
+                <option>What is name your most dislike?</option>
+                <option>Who is help you for exam when a high school?</option>
+                <option>What is the first name of the boy or girl that you first kissed?</option>
+                <option>What was your dream job as a child?</option>
+                <option>What is the middle name of your youngest child?</option>
+                <option>What school did you attend for sixth grade?</option>
+              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans11" /> <br /><br />
+              2. <select class="form-control input-sm" style="max-width:150px">
+                <option>What is  car you want to drive?</option>
+                <option>What is  name your fans singer?</option>
+                <option>What is  favorite movie name ?</option>
+                <option>What is your oldest  grandfather’s birthday month and year?</option>
+                <option>What is name your most dislike?</option>
+                <option>Who is help you for exam when a high school?</option>
+                <option>What is the first name of the boy or girl that you first kissed?</option>
+                <option>What was your dream job as a child?</option>
+                <option>What is the middle name of your youngest child?</option>
+                <option>What school did you attend for sixth grade?</option>
+              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans21" /> <br /><br />
+              3. <select class="form-control input-sm" style="max-width:150px">
+                <option>What is  car you want to drive?</option>
+                <option>What is  name your fans singer?</option>
+                <option>What is  favorite movie name ?</option>
+                <option>What is your oldest  grandfather’s birthday month and year?</option>
+                <option>What is name your most dislike?</option>
+                <option>Who is help you for exam when a high school?</option>
+                <option>What is the first name of the boy or girl that you first kissed?</option>
+                <option>What was your dream job as a child?</option>
+                <option>What is the middle name of your youngest child?</option>
+                <option>What school did you attend for sixth grade?</option>
+              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans31" />
           </form>
+              <br /> 
+              
+          <div id="image-upload-3" style="display:none">
+            <p>Please paste your chosen images</p>
+            <input id ="userPhoto1" type="text" class="form-control input-lg" name="userPhoto1" />
+            <!--<form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
+              <input type="file" class="form-control input-lg" name="userPhoto" />
+              <input type="submit" class="btn btn-lg btn-sm" value="Upload Image" id="upload"/>
+            </form>-->
+            <br /> 
+          </div>
+          <div id="image-upload-4" style="display:none">
+            <div id="patternHolder1" class="pattern-holder patt-holder">
+            </div>
+          </div>
           <br>  
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-           <button id="clearing" type="button" class="btn btn-lg btn-default" >Clear</button>
-          <button data-dismiss="modal" id="createSeller" class="btn btn-success btn-lg">Set up</button>
+          <button id="sendImage3" class="btn btn-lg btn-success">Next</button>
+           <button id="sendImage4" class="btn btn-lg btn-success" style="display:none">Next</button>
+          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Discard</button>
+          <button id="clearing" type="button" class="btn btn-lg btn-default" style="display:none">Clear</button>
+          <button data-dismiss="modal" id="createSeller" class="btn btn-success btn-lg" style="display:none">Set up</button>
         </div>
       </div>
     </div>
   </div>
   <!-- Modal end -->
-
-  <!-- Modal start -->
-  <div class="modal fade" id="modalBuyer" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="createRoomLabel">Buyer setting up trading room info</h4>
-        </div>
-        <div class="modal-body">
-          <p>Please set your login password</p>
-          <br>
-          <form class="form-inline" id="createRoomForm">
-            Your location :
-            <input type="text" class="form-control input-lg" id="buyer_pass" />
-          </form>
-          <br>  
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-          <button data-dismiss="modal" id="createBuyer" class="btn btn-success btn-lg">Set up</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Modal end -->
-
-  <!-- Modal start -->
+  
+   <!-- Modal start -->
   <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="addImage" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">

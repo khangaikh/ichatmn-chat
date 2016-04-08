@@ -65,6 +65,14 @@ var rooms = {};
 var sockets = [];
 var chatHistory = {};
 
+var factorial = function(n) {
+    if(n == 0) {
+        return 1
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+
 function purge(s, action, chat_id) {
 	if (people[s.id].inroom) { //user is in a room
 		var room = rooms[people[s.id].inroom]; //check which room user is in.
@@ -712,9 +720,7 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//User save functions
-	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser, str) {
-
-
+	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser, a1, a2, a3, image) {
 
 		var sqlite3 = require('sqlite3').verbose();
 		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
@@ -726,9 +732,13 @@ io.sockets.on("connection", function (socket) {
     		//var buffer = new Buffer( dataString, 'base64');
 
 			console.log("Buyer drawing selected image created");
-			console.log(str);
+			console.log(pass);
+			console.log(pass.length);
 
-			if(str.length<256){
+			//Calculating
+			var bit = (25+pass.length)*pass.length+a1.length+a2.length+a3.length;
+
+			if(bit.length<256){
 			//Image is smaller than 256 bit alert draw agian
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 			}else{
@@ -738,7 +748,7 @@ io.sockets.on("connection", function (socket) {
 				var requestData = {
 		            "user": curUser,
 		            "pass": pass,
-		            "image": str,
+		            "image": image,
 		            "solutions": 2
 		   	 	}
 		   	 	console.log("Connecting to KDS...");
@@ -774,14 +784,18 @@ io.sockets.on("connection", function (socket) {
 
 				console.log('Encrypted secret key: ', crypted);
 				console.log('Saving secret key: ', crypted);
-				db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key, secret_draw_buyer) VALUES (?,?,?,?,?,?,?)", {
+
+				db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key, secret_draw_buyer,buyer_ans_1,buyer_ans_2,buyer_ans_3) VALUES (?,?,?,?,?,?,?,?,?,?)", {
 		          1: curUser,
 		          2: roomID,
 		          3: time,
 		          4: minute,
 		          5: pass,
 		          6: crypted,
-		          7: str
+		          7: image,
+		          8: a1,
+		          9: a2,
+		          10: a3
 		      	});
 		      	db.close();
 		      	socket.emit("update_private_msg", "Notify to>Seller");
@@ -797,9 +811,11 @@ io.sockets.on("connection", function (socket) {
     		//var buffer = new Buffer( dataString, 'base64');
 
 			console.log("Seller drawing selected image created");
-			console.log(str);
+			console.log(pass);
 
-			if(str.length<256){
+			var bit = (25+pass.length)*pow(pass.length)+a1.length+a2.length+a3.length;
+
+			if(bit.length<256){
 			//Image is smaller than 256 bit alert draw agian
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 			}else{
@@ -809,7 +825,7 @@ io.sockets.on("connection", function (socket) {
 				var requestData = {
 		            "user": curUser,
 		            "pass": pass,
-		            "image": str,
+		            "image": image,
 		            "solutions": 2
 		   	 	}
 		   	 	console.log("Connecting to KDS...");
@@ -852,7 +868,7 @@ io.sockets.on("connection", function (socket) {
 		          3: time,
 		          4: minute,
 		          5: pass,
-		          6: str
+		          6: image
 		      	});
 		      	db.close();
 		      	socket.emit("update_private_msg", "Notify to>Buyer");
@@ -862,16 +878,21 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//User setting functions
-	socket.on("set_user", function( pass, roomID, curUser, str,interest) {
+	socket.on("set_user", function( pass, roomID, curUser, image,interest,a1,a2,a3) {
 		var sqlite3 = require('sqlite3').verbose();
 		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
+		console.log(interest);
 		if(interest == 1){
 			console.log("Seller is setting up"); 
-			db.run("UPDATE tickets SET seller =?, seller_key =?, secret_draw_seller=? WHERE public_key=?", {
+			console.log(a1); 
+			db.run("UPDATE tickets SET seller =?, seller_key =?, secret_draw_seller=?, seller_ans_1=?, seller_ans_2=?, seller_ans_3=? WHERE public_key=?", {
 	          1: curUser,
 	          2: pass,
-	          3: str,
-	          4: roomID
+	          3: image,
+	          4: a1,
+	          5: a2,
+	          6: a3,
+	          7: roomID
 	      	});
 	      	db.close();
 	      	socket.emit("update_private_msg", "File upload<Seller");

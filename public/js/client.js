@@ -91,9 +91,11 @@ function hello(caller) {
 $(document).ready(function() {
 
   var lock= new PatternLock('#patternHolder',{matrix:[5,5]});
+  var lock1= new PatternLock('#patternHolder1',{matrix:[5,5]});
   //var lock= new PatternLock('#patternHolder1',{matrix:[5,5]});
-  var table = $('#draw1');
+  /*var table = $('#draw1');
   var t = "<tr>";
+  
   for (var j = 1; j <= 100; j++) {
       t += "<tr>"
       for (var i = 1; i <= 100; i++) {
@@ -159,7 +161,7 @@ $(document).ready(function() {
   $(document)
     .mouseup(function () {
       isMouseDown = false;
-    }); 
+    }); */
     
   // This demo depends on the canvas element
   if(!('getContext' in document.createElement('canvas'))){
@@ -175,27 +177,6 @@ $(document).ready(function() {
   $("#private_actions").hide();
   $("#private_conversation").hide();
   $("#private_chatForm").hide();
-
-  var doc = $(document);
-  var win = $(window);
-  var canvas = $('#paper');
-  canvas.hide();
-
-  var ctx = canvas[0].getContext('2d');
-
-  var canvas1 = $('#paper2');
-  canvas1.hide();
-
-  var ctx1 = canvas1[0].getContext('2d');
- 
-  var id = Math.round($.now()*Math.random());
-
-  // A flag for drawing activity
-  var drawing = false;
-  var second = false;
-
-  var clients = {};
-  var cursors = {};
 
   socket.on('connect', function(){
 
@@ -226,108 +207,6 @@ $(document).ready(function() {
       };
     });
   });
-
-  socket.on('moving', function (data) {
-
-    // Is the user drawing?
-    if(data.drawing && clients[data.id]){
-      // Draw a line on the canvas. clients[data.id] holds
-      // the previous position of this user's mouse pointer
-      drawLine(clients[data.id].x, clients[data.id].y, data.x, data.y);
-    }
-
-  });
-
-  var prev = {};
-
-  canvas.on('mousedown',function(e){
-
-    drawing = true;
-    prev.x = e.pageX;
-    prev.y = e.pageY;
-
-    // Hide the instructions
-   
-  });
-
-  canvas1.on('mousedown',function(e){
-
-    drawing = true;
-    second = true;
-    prev.x = e.pageX;
-    prev.y = e.pageY;
-
-    // Hide the instructions
-   
-  });
-
-  doc.bind('mouseup mouseleave',function(){
-    drawing = false;
-  });
-
-  var lastEmit = $.now();
-
-  doc.on('mousemove',function(e){
-    if($.now() - lastEmit > 10){
-      socket.emit('mousemove',{
-        'x': e.pageX,
-        'y': e.pageY,
-        'drawing': drawing,
-        'id': id
-      });
-      lastEmit = $.now();
-    }
-
-    // Draw a line for the current user's movement, as it is
-    // not received in the socket.on('moving') event above
-
-    if(drawing){
-
-      drawLine(prev.x, prev.y, e.pageX, e.pageY);
-
-      prev.x = e.pageX;
-      prev.y = e.pageY;
-    }
-  });
-
-  // Remove inactive clients after 10 seconds of inactivity
-  setInterval(function(){
-
-    for(ident in clients){
-      if($.now() - clients[ident].updated > 10000){
-
-        // Last update was more than 10 seconds ago.
-        // This user has probably closed the page
-
-        cursors[ident].remove();
-        delete clients[ident];
-        delete cursors[ident];
-      }
-    }
-
-  },10000);
-
-  function drawLine(fromx, fromy, tox, toy){
-    var fromxnew =tox - 200;
-    var fromxnew =toy - 200;
-    if(second){
-      ctx1.moveTo(fromx, fromy);
-      ctx1.lineTo(tox, toy);
-      ctx1.stroke();
-    }else{
-      ctx.moveTo(fromx, fromy);
-      ctx.lineTo(tox, toy);
-      ctx.stroke();
-    }
-    
-  }
-
-  function drawLine1(fromx, fromy, tox, toy){
-    var fromxnew =tox - 200;
-    var fromxnew =toy - 200;
-
-   
-  }
 
   $("form").submit(function(event) {
     event.preventDefault();
@@ -491,6 +370,7 @@ $(document).ready(function() {
     }else{
       $("#createRoomForm-1").hide();
       $("#sendImage").hide();
+      $("#sendImage1").show();
       $("#image-upload-1").show();
       var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a3;
       var win = window.open(url, '_blank');
@@ -502,8 +382,8 @@ $(document).ready(function() {
           alert('Please allow popups for this site');
       }
     }
-    
 
+    /*
     socket.emit("check", roomName, function(data) {
       roomExists = data.result;
        if (roomExists) {
@@ -518,9 +398,69 @@ $(document).ready(function() {
           $("#errors").hide();
           }
         }
-    });
+    });*/
   });
 
+$("#sendImage3").click(function(e) {
+    var a1 = $("#ans11").val();
+    var a2 = $("#ans21").val();
+    var a3 = $("#ans31").val();
+
+    if(a1=="" || a2=="" || a3==""){
+        alert("Please fill your answers");
+        e.preventDefault();
+        return;
+    }else{
+      $("#createRoomForm-2").hide();
+      $("#sendImage3").hide();
+      $("#sendImage4").show();
+      $("#image-upload-3").show();
+      var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a3;
+      var win = window.open(url, '_blank');
+      if(win){
+          //Browser has allowed it to be opened
+          win.focus();
+      }else{
+          //Broswer has blocked it
+          alert('Please allow popups for this site');
+      }
+    }
+  });
+
+  $("#sendImage1").click(function(e) {
+
+      var user_link = $("#userPhoto").val();
+      if(user_link==""){
+        alert("Please select your photo and paste it here");
+        e.preventDefault();
+        return;
+      }
+      $("#image-upload-1").hide(); 
+      $("#image-upload-2").show();
+      $("#patternHolder").css('background-image', 'url(' + user_link + ')');  
+      $("#patternHolder").css('background-size', 'contain');   
+      $("#sendImage1").hide();
+      $("#createKey").show();
+      $("#clearing").show();
+  });
+
+  $("#sendImage4").click(function(e) {
+
+      var user_link = $("#userPhoto1").val();
+      if(user_link==""){
+        alert("Please select your photo and paste it here");
+        e.preventDefault();
+        return;
+      }
+      $("#image-upload-3").hide(); 
+      $("#image-upload-4").show();
+      $("#patternHolder1").css('background-image', 'url(' + user_link + ')');  
+      $("#patternHolder1").css('background-size', 'contain');   
+      $("#sendImage3").hide();
+      $("#createSeller").show();
+      $("#clearing").show();
+  });
+    
   $("#saveKey").click(function() {
     // save canvas image as data url (png format by default)
     var roomID = privateRoomID;
@@ -540,15 +480,27 @@ $(document).ready(function() {
 
   $("#clearing").click(function() {
 
-    $('table tr td').each(function () {
-      $(this).removeClass('highlighted');
-    });
+   
+   lock.reset();
 
+  });
+
+  $("#discard").click(function() {
+      $("#ans1").val("");
+      $("#ans2").val("");
+      $("#ans3").val("");
+      $("#createRoomForm-1").show();
+      $("#sendImage").show();
+      $("#sendImage1").hide();
+      $("#clearing").hide();
+      $("#createKey").hide();
+      $("#image-upload-1").hide();
+      $("#image-upload-2").hide();
   });
 
   $("#createSeller").click(function() {
 
-    var myTableArray = [];
+    /*var myTableArray = [];
 
     $("#draw2 tr").each(function() {
         var arrayOfThisRow = [];
@@ -560,28 +512,32 @@ $(document).ready(function() {
             tableData.each(function() { arrayOfThisRow.push(0); });
         }
         myTableArray.push(arrayOfThisRow);
-    });
-    var str = myTableArray.toString();
-    var pass = $("#seller_pass").val();
-    var roomID = privateRoomID;
-    socket.emit("set_user", pass,roomID, curUser, str,1);
-  });
+    });*/
+    var pass = lock1.getPattern(); 
+    var user_link = $("#userPhoto").val();
 
-  $("#createBuyer").click(function() {
-    var pass = $("#buyer_pass").val();
     var roomID = privateRoomID;
-    socket.emit("set_user", pass,roomID, curUser, 2);
-  });
-
-  $("#clear").click(function() {
-    var pass = $("#buyer_pass").val();
-    var roomID = privateRoomID;
-    socket.emit("set_user", pass,roomID, curUser, 2);
+    var a1 = $("#ans11").val();
+    var a2 = $("#ans21").val();
+    var a3 = $("#ans31").val();
+    var user_link = $("#userPhoto1").val();
+    console.log(a1);
+    console.log(a2);
+    console.log(a3);
+    socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
   });
 
   $("#createKey").click(function() {
 
-    var myTableArray = [];
+    var pass = lock.getPattern(); 
+    var user_link = $("#userPhoto").val();
+    var interest = $("#interest").val();
+    var roomID = privateRoomID;
+    var a1 = $("#ans1").val();
+    var a2 = $("#ans2").val();
+    var a3 = $("#ans3").val();
+    var user_link = $("#userPhoto").val();
+    /*var myTableArray = [];
 
     $("#draw1 tr").each(function() {
         var arrayOfThisRow = [];
@@ -600,10 +556,10 @@ $(document).ready(function() {
     var time = $("#time").val();
     var minute = $("#minute").val();
     var pass = $("#user_pass").val();
-    var roomID = privateRoomID;
-    var dataURL = canvas[0].toDataURL();
+    
+    var dataURL = canvas[0].toDataURL();*/ 
 
-    socket.emit("save_user", interest, time, minute, pass, roomID, curUser, str, function(data) {
+    socket.emit("save_user", interest, '1', '1', pass, roomID, curUser, a1, a2, a3, user_link, function(data) {
        alert(data);
        if (data == 1) {
           //Seller
