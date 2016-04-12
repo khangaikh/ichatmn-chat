@@ -374,6 +374,14 @@ $(document).ready(function() {
       $("#image-upload-1").show();
       var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a3;
       var win = window.open(url, '_blank');
+
+      var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a2;
+      var win = window.open(url, '_blank');
+
+      var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a1;
+      var win = window.open(url, '_blank');
+      
+
       if(win){
           //Browser has allowed it to be opened
           win.focus();
@@ -437,7 +445,7 @@ $("#sendImage3").click(function(e) {
       }
       $("#image-upload-1").hide(); 
       $("#image-upload-2").show();
-      $("#patternHolder").css('background-image', 'url(' + user_link + ')');  
+      $("#patternHolder").css('background', 'url(' + user_link + ')');  
       $("#patternHolder").css('background-size', 'contain');   
       $("#sendImage1").hide();
       $("#createKey").show();
