@@ -7,7 +7,6 @@
 
 .patt-holder{
 	-ms-touch-action: none;
-	    margin-left: 150px;
 }
 .patt-wrap{position:relative; cursor:pointer;}
 .patt-wrap ul, .patt-wrap li{

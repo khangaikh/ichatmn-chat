@@ -569,7 +569,7 @@ io.sockets.on("connection", function (socket) {
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 4);
 				}
 
-				var str6 = "http://159.203.105.18:8081/?id=";
+				var str6 = "http://localhost:8081/?id=";
 				if(msg.indexOf(str6) != -1){
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 5);
 				}
