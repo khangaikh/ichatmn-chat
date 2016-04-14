@@ -12,7 +12,8 @@ var express = require('express')
 var multer  = require('multer');
 var done=false;
 //var ip_address = 'smb://192.168.0.10/db/ichat.db';
-var ip_address = '/Applications/XAMPP/htdocs/ichatmn-web';
+//var ip_address = '/Applications/XAMPP/htdocs/ichatmn-web';
+var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 var internal = 'localhost';
 var ip_run = "192.168.0.10"; //127.0.0.1
 
