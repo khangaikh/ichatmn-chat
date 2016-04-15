@@ -690,7 +690,7 @@ io.sockets.on("connection", function (socket) {
 		//Clearing all private chat information
 		//if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
 		//	purge(socket, "disconnect",chat_id);
-			socket.emit("update_private_msg", "http://159.203.105.18:8081/?id="+roomID+"");
+			socket.emit("update_private_msg", "http://localhost:8081/?id="+roomID+"");
 		//}
 	});
 
