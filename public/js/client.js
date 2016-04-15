@@ -582,14 +582,18 @@ $(document).ready(function() {
       $('#people').append("<li class=\"list-group-item active\">People online <span class=\"badge\">"+data.count+"</span></li>");
       var type = data.type;
       var name = $("#me").val();
-      console.log(name);
       $.each(data.people, function(a, obj) {
         if(obj.type === type ){
-          $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
-          console.log(obj);
+          if (!("country" in obj)) {
+            html = "";
+          } else {
+            html = "<img class=\"flag flag-"+obj.country+"\"/>";
+          }
+          $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
           if(obj.name != name){
             $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
-           }
+          }
+            
         }
         //peopleOnline.push(obj.name);
       });
@@ -658,10 +662,10 @@ $(document).ready(function() {
         console.log("chat :"+ type);
         $.each(data.rooms, function(id, room) {
           if(room.chat == type){
-            console.log("roomchat :"+ data.user);
+            console.log("roomchat :"+ curUser);
             console.log("invitee :"+ room.invited);
             var html ="";
-            if(room.invited == data.user ){
+            if(room.invited == curUser ){
                var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>";
             }
             $('#rooms').append("<li id="+id+" class=\"list-group-item\"><span>" + room.name + "</span> " + html + "</li>");
@@ -694,12 +698,11 @@ $(document).ready(function() {
     })
 
     socket.on("sendUser", function(data) {
-      data.user = data.user;
+      curUser = data.user;
     });
 
     socket.on("setme", function(data) {
-      console.log(data);
-      $("#me").val(data.name); 
+      $("#me").val(data.name);
     });
 
     socket.on("disconnect", function(){
