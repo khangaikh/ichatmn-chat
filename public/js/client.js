@@ -218,6 +218,21 @@ $(document).ready(function() {
       });
   });
 
+  $("#file_pass").keypress(function(e){
+    var name = $("#file_pass").val();
+    if(name.length < 2) {
+        e.preventDefault();
+        $("#uploadForm").hide();
+        $("#errors1").empty();
+        $("#errors1").show();
+        $("#errors1").append("Please enter password to upload file");
+    } else {
+      $("#uploadForm").show();
+      $("#errors1").empty();
+      $("#errors1").hide();
+    }
+  });
+
   $("#main-chat-screen").hide();
   $("#errors").hide();
   $("#name").focus();
@@ -664,8 +679,6 @@ socket.on("exists", function(data) {
   $("#errors").empty();
   $("#errors").show();
   $("#errors").append(data.msg + " Try <strong>" + data.proposedName + "</strong>");
-    toggleNameForm();
-    toggleChatWindow();
 });
 
 socket.on("joined", function() {

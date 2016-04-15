@@ -305,20 +305,20 @@
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4 class="modal-title" id="createRoomLabel">Seller please upload your file</h4>
         </div>
+        <div class="alert alert-danger" id="errors1"></div>
         <div class="modal-body">
           Please write your file password :
           <input type="text" class="form-control input-lg" id="file_pass" />
           <br>
           <p>You can  upload files up to 5MB. </p>
           <br>
-          <form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
+          <form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline" style="display:none">
             <input type="file" class="form-control input-lg" name="userPhoto" />
             <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-          <button id="upload_pop" type="button" class="btn btn-lg btn-default" data-dismiss="modal">OK</button>
         </div>
       </div>
     </div>
