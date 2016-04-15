@@ -737,7 +737,8 @@ io.sockets.on("connection", function (socket) {
 			console.log(pass.length);
 
 			//Calculating
-			var bit = (25+pass.length)*pass.length+a1.length+a2.length+a3.length;
+			var l = pass.length/2;
+			var bit = 25*Math.pow(29,(l-1)); 
 
 			if(bit.length<256){
 			//Image is smaller than 256 bit alert draw agian
@@ -814,7 +815,9 @@ io.sockets.on("connection", function (socket) {
 			console.log("Seller drawing selected image created");
 			console.log(pass);
 
-			var bit = (25+pass.length)*pow(pass.length)+a1.length+a2.length+a3.length;
+			var l = pass.length/2;
+
+			var bit = 25*Math.pow(29,(l-1));
 
 			if(bit.length<256){
 			//Image is smaller than 256 bit alert draw agian
