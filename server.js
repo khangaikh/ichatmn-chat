@@ -12,8 +12,8 @@ var express = require('express')
 var multer  = require('multer');
 var done=false;
 //var ip_address = 'smb://192.168.0.10/db/ichat.db';
-//var ip_address = '/Applications/XAMPP/htdocs/ichatmn-web';
-var ip_address = '/opt/lampp/htdocs/ichatmn-web';
+var ip_address = '/Applications/XAMPP/htdocs/ichatmn-web';
+//var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 var internal = 'localhost';
 var ip_run = "192.168.0.10"; //127.0.0.1
 
@@ -36,7 +36,6 @@ app.configure(function() {
 	    console.log(err);
 	    //process.exit(1);
 	}
-
 });
 
 app.get('/', function(req, res) {
@@ -273,8 +272,6 @@ io.sockets.on("connection", function (socket) {
 		// This line sends the event (broadcasts it)
 		// to everyone except the originating client.
 		socket.broadcast.emit('moving', data);
-
-
 	});
 
 	socket.on("joinserver", function(name, device, url) {
@@ -546,32 +543,28 @@ io.sockets.on("connection", function (socket) {
 				socket.emit("update", "Can't find " + whisperTo);
 			}
 		} else {
-
 			if (io.sockets.manager.roomClients[socket.id]['/'+socket.room] !== undefined ) {
 				var str2 = "file:";
+				var str3 = "Notify to>";
+				var str4 = "File Uploaded";
+				var str5 = "Draw your secret key<";
+				var str6 = "http://localhost:8081/?id=";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], filename[1], 1);
 				}
-				var str3 = "Notify to>";
-				if(msg.indexOf(str3) != -1){
+				else if(msg.indexOf(str3) != -1){
 					var interest = msg.split(">");
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], interest[1], 2);
 				}
+				else if(msg.indexOf(str4) != -1){
 
-				var str4 = "File upload<";
-				if(msg.indexOf(str4) != -1){
-					var fileupload = msg.split("<");
-				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], fileupload[1], 3);
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], 'Seller', 3);
 				}
-
-				var str5 = "Draw your secret key<";
-				if(msg.indexOf(str5) != -1){
+				else if(msg.indexOf(str5) != -1){
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 4);
 				}
-
-				var str6 = "http://localhost:8081/?id=";
-				if(msg.indexOf(str6) != -1){
+				else if(msg.indexOf(str6) != -1){
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 5);
 				}
 
@@ -614,7 +607,6 @@ io.sockets.on("connection", function (socket) {
 		    else {
 				socket.emit("private_update", "Please connect to a room.");
 		    }
-			
 		}
 	});
 
@@ -899,7 +891,7 @@ io.sockets.on("connection", function (socket) {
 	          7: roomID
 	      	});
 	      	db.close();
-	      	socket.emit("update_private_msg", "File upload<Seller");
+	      	socket.emit("show_file_upload", "File upload<Seller");
 		}else{
 			console.log("Buyer is setting up");
 			db.run("UPDATE tickets SET buyer =?, buyer_key =? , secret_draw_buyer=? WHERE public_key=?", {
@@ -909,7 +901,7 @@ io.sockets.on("connection", function (socket) {
 	          4: roomID
 	      	});
 	      	db.close();
-	      	socket.emit("update_private_msg", "File upload<Seller");
+	      	//socket.emit("update_private_msg", "File upload<Seller");
 		}
 	
 	});
@@ -924,8 +916,8 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("removeRoom", function(id) {
-		 var room = rooms[id];
-		 if (socket.id === room.owner) {
+		var room = rooms[id];
+		if (socket.id === room.owner) {
 			purge(socket, "removeRoom",chat_id);
 		} else {
             socket.emit("update", "Only the owner can remove a room.");
@@ -943,12 +935,11 @@ io.sockets.on("connection", function (socket) {
 				} else {
 					room.addPerson(socket.id);
 					people[socket.id].inroom = id;
-					//socket.room = room.name;
-					//socket.join(socket.room);
 					user = people[socket.id];
 					io.sockets.in(socket.room).emit("update", user.name + " has connected to " + room.name + " room.");
 					socket.emit("update_private", "Welcome to " + room.name + ".");
 					socket.emit("sendprivateRoomID", {id: id});
+					socket.emit("show_seller_actions",{id:id});
 					var keys = _.keys(chatHistory);
 					if (_.contains(keys, socket.room)) {
 						socket.emit("history", chatHistory[socket.room]);

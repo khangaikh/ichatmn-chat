@@ -90,11 +90,20 @@
           <input type="submit" name="private_send" id="private_send" value="Send" class="btn btn-success btn-lg">
           <div class="btn-group" id="private_actions" >
             <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
-              Trading <span class="caret"></span>
+              Buyer actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
               <li><a href="#" name="setUp" data-toggle="modal" data-target="#tradeModal">Set up</a></li>
-              <li><a href="#" id="finish">Finish up</a></li>
+              <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
+            </ul>
+          </div>
+          <div class="btn-group" id="seller_actions" style="display:none">
+            <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
+              Seller actions <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="#" name="setUp" data-toggle="modal" data-target="#modalSeller">Set up trade info</a></li>
+              <li style="display:none" id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">File</a></li>
             </ul>
           </div>
         </form>
@@ -145,9 +154,8 @@
           <p>You can  set up a trading room with your buyer or seller. </p>
           <br>
           <form class="form-inline" id="createRoomForm-1">
-            Your interest type :
-            <select id="interest" class="form-control input-sm">
-                <option value="2">Buyer</option>
+            <select id="interest" class="form-control input-sm" style="display: none">
+                <option value="2" selected>Buyer</option>
                 <option value="1">Seller</option>
             </select>
             <br />

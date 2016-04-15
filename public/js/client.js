@@ -92,76 +92,6 @@ $(document).ready(function() {
 
   var lock= new PatternLock('#patternHolder',{matrix:[5,5]});
   var lock1= new PatternLock('#patternHolder1',{matrix:[5,5]});
-  //var lock= new PatternLock('#patternHolder1',{matrix:[5,5]});
-  /*var table = $('#draw1');
-  var t = "<tr>";
-  
-  for (var j = 1; j <= 100; j++) {
-      t += "<tr>"
-      for (var i = 1; i <= 100; i++) {
-          t += "<td>"
-      }
-  }
-  table.html(t).show();
-
-  var table = $('#draw2')
-
-  var t = "<tr>"
-  for (var j = 1; j <= 100; j++) {
-      t += "<tr>"
-      for (var i = 1; i <= 100; i++) {
-          t += "<td>"
-      }
-  }
-  table.html(t).show();
-
-
-  var isMouseDown = false,
-    isHighlighted;
-  $("#draw1 td")
-    .mousedown(function () {
-      isMouseDown = true;
-      $(this).toggleClass("highlighted");
-      isHighlighted = $(this).hasClass("highlighted");
-      return false; // prevent text selection
-    })
-    .mouseover(function () {
-      if (isMouseDown) {
-        $(this).toggleClass("highlighted", isHighlighted);
-      }
-    })
-    .bind("selectstart", function () {
-      return false;
-    })
-
-  $(document)
-    .mouseup(function () {
-      isMouseDown = false;
-    });
-
-
-   var isMouseDown = false,
-    isHighlighted;
-  $("#draw2 td")
-    .mousedown(function () {
-      isMouseDown = true;
-      $(this).toggleClass("highlighted");
-      isHighlighted = $(this).hasClass("highlighted");
-      return false; // prevent text selection
-    })
-    .mouseover(function () {
-      if (isMouseDown) {
-        $(this).toggleClass("highlighted", isHighlighted);
-      }
-    })
-    .bind("selectstart", function () {
-      return false;
-    })
-
-  $(document)
-    .mouseup(function () {
-      isMouseDown = false;
-    }); */
     
   // This demo depends on the canvas element
   if(!('getContext' in document.createElement('canvas'))){
@@ -184,9 +114,12 @@ $(document).ready(function() {
  
     delivery.on('delivery.connect',function(delivery){
       $("#upload[type=submit]").click(function(evt){
+
         var file = $("input[type=file]")[0].files[0];
         var extraParams = {roomID: privateRoomID};
         delivery.send(file,extraParams);
+        var msg = "File Uploaded";
+        socket.emit("private_send", new Date().getTime(), msg);
         evt.preventDefault();
       });
     });
@@ -343,12 +276,11 @@ $(document).ready(function() {
     }
   });
 
-
   $("#showCreateRoom").click(function() {
     $("#createRoomForm").toggle();
   });
   $("#showCreateRoom").click(function() {
-    $("#createRoomForm").toggle();
+      $("#createRoomForm").toggle();
   });
 
   $("#createRoomBtn").click(function() {
@@ -404,26 +336,9 @@ $(document).ready(function() {
           alert('Please allow popups for this site');
       }
     }
-
-    /*
-    socket.emit("check", roomName, function(data) {
-      roomExists = data.result;
-       if (roomExists) {
-          $("#errors").empty();
-          $("#errors").show();
-          $("#errors").append("Room <i>" + roomName + "</i> already exists");
-        } else {      
-        if (roomName.length > 0) { //also check for roomname
-          socket.emit("createRoom", roomName, invite);
-          $("#errors").empty();
-          $("#private_actions").show();
-          $("#errors").hide();
-          }
-        }
-    });*/
   });
 
-$("#sendImage3").click(function(e) {
+  $("#sendImage3").click(function(e) {
     var a1 = $("#ans11").val();
     var a2 = $("#ans21").val();
     var a3 = $("#ans31").val();
@@ -528,19 +443,6 @@ $("#sendImage3").click(function(e) {
 
   $("#createSeller").click(function() {
 
-    /*var myTableArray = [];
-
-    $("#draw2 tr").each(function() {
-        var arrayOfThisRow = [];
-        var tableData = $(this).find('td');
-
-        if (tableData.hasClass('highlighted')) {
-            tableData.each(function() { arrayOfThisRow.push(1); });
-        }else{
-            tableData.each(function() { arrayOfThisRow.push(0); });
-        }
-        myTableArray.push(arrayOfThisRow);
-    });*/
     var pass = lock1.getPattern(); 
     var user_link = $("#userPhoto").val();
 
@@ -552,6 +454,7 @@ $("#sendImage3").click(function(e) {
     console.log(a1);
     console.log(a2);
     console.log(a3);
+    $("#fileupload").show();
     socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
   });
 
@@ -591,10 +494,10 @@ $("#sendImage3").click(function(e) {
        alert(data);
        if (data == 1) {
           //Seller
-           $("#private_msgs").append("<li><strong><span class='text-success'> <a href='#' data-toggle='modal' data-target='#modalBuyer' > Send buyer for notify </a></li>");
+           $("#private_msgs").append("<li> <a href='#' data-toggle='modal' data-target='#modalBuyer' > Send buyer for notify </a></li>");
         } else {      
           //Buyer
-           $("#private_msgs").append("<li><strong><span class='text-success'> <a href='#' data-toggle='modal' data-target='#modalSeller' > Send seller for notify </a></li>");
+           $("#private_msgs").append("<li> <a href='#' data-toggle='modal' data-target='#modalSeller' > Send seller for notify </a></li>");
         }
     });
   });
@@ -624,239 +527,200 @@ $("#sendImage3").click(function(e) {
     $("#msg").focus();
   });
 
-/*
-  $("#whisper").change(function() {
-    var peopleOnline = [];
-    if ($("#whisper").prop('checked')) {
-      console.log("checked, going to get the peeps");
-      //peopleOnline = ["Tamas", "Steve", "George"];
-      socket.emit("getOnlinePeople", function(data) {
-        $.each(data.people, function(clientid, obj) {
-          console.log(obj.name);
-          peopleOnline.push(obj.name);
-        });
-        console.log("adding typeahead")
-        $("#msg").typeahead({
-            local: peopleOnline
-          }).each(function() {
-            if ($(this).hasClass('input-lg'))
-              $(this).prev('.tt-hint').addClass('hint-lg');
-        });
-      });
-      
-      console.log(peopleOnline);
-    } else {
-      console.log('remove typeahead');
-      $('#msg').typeahead('destroy');
-    }
-  });
-  // $( "#whisper" ).change(function() {
-  //   var peopleOnline = [];
-  //   console.log($("#whisper").prop('checked'));
-  //   if ($("#whisper").prop('checked')) {
-  //     console.log("checked, going to get the peeps");
-  //     peopleOnline = ["Tamas", "Steve", "George"];
-  //     // socket.emit("getOnlinePeople", function(data) {
-  //     //   $.each(data.people, function(clientid, obj) {
-  //     //     console.log(obj.name);
-  //     //     peopleOnline.push(obj.name);
-  //     //   });
-  //     // });
-  //     //console.log(peopleOnline);
-  //   }
-  //   $("#msg").typeahead({
-  //         local: peopleOnline
-  //       }).each(function() {
-  //         if ($(this).hasClass('input-lg'))
-  //           $(this).prev('.tt-hint').addClass('hint-lg');
-  //       });
-  // });
-*/
-
-//socket-y stuff
-socket.on("exists", function(data) {
-  $("#errors").empty();
-  $("#errors").show();
-  $("#errors").append(data.msg + " Try <strong>" + data.proposedName + "</strong>");
-});
-
-socket.on("joined", function() {
-  $("#errors").hide();
-  if (navigator.geolocation) { //get lat lon of user
-    navigator.geolocation.getCurrentPosition(positionSuccess, positionError, { enableHighAccuracy: true });
-  } else {
+  //socket-y stuff
+  socket.on("exists", function(data) {
+    $("#errors").empty();
     $("#errors").show();
-    $("#errors").append("Your browser is ancient and it doesn't support GeoLocation.");
-  }
-  function positionError(e) {
-    console.log(e);
-  }
-
-  function positionSuccess(position) {
-      var lat = position.coords.latitude;
-      var lon = position.coords.longitude;
-      //consult the yahoo service
-      $.ajax({
-        type: "GET",
-        url: "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20geo.placefinder%20where%20text%3D%22"+lat+"%2C"+lon+"%22%20and%20gflags%3D%22R%22&format=json",
-        dataType: "json",
-         success: function(data) {
-          socket.emit("countryUpdate", {country: data.query.results.Result.countrycode});
-        }
-      });
-    }
+    $("#errors").append(data.msg + " Try <strong>" + data.proposedName + "</strong>");
   });
 
-  socket.on("history", function(data) {
-    if (data.length !== 0) {
-      $("#msgs").append("<li><strong><span class='text-warning'>Last 10 messages:</li>");
-      $.each(data, function(data, msg) {
-        $("#msgs").append("<li><span class='text-warning'>" + msg + "</span></li>");
-      });
+  socket.on("joined", function() {
+    $("#errors").hide();
+    if (navigator.geolocation) { //get lat lon of user
+      navigator.geolocation.getCurrentPosition(positionSuccess, positionError, { enableHighAccuracy: true });
     } else {
-      $("#msgs").append("<li><strong><span class='text-warning'>No past messages in this room.</li>");
+      $("#errors").show();
+      $("#errors").append("Your browser is ancient and it doesn't support GeoLocation.");
     }
-  });
+    function positionError(e) {
+      console.log(e);
+    }
 
-  socket.on("update", function(msg) {
-    $("#msgs").append("<li>" + msg + "</li>");
-  });
-
-  socket.on("update_private", function(msg) {
-    $("#private_conversation").show();
-    $("#private_chatForm").show();
-    $("#private_msgs").append("<li>" + msg + "</li>");
-  });
-
-  socket.on("update_private_msg", function(msg) {
-    $("#private_msg").val(msg);
-  });
-
-  socket.on("update-people", function(data){
-    //var peopleOnline = [];
-    $("#people").empty();
-    $("#users").empty();
-    $('#people').append("<li class=\"list-group-item active\">People online <span class=\"badge\">"+data.count+"</span></li>");
-    var type = data.type;
-    var name = data.user;
-    $.each(data.people, function(a, obj) {
-      if(obj.type === type ){
-        if (!("country" in obj)) {
-          html = "";
-        } else {
-          html = "<img class=\"flag flag-"+obj.country+"\"/>";
-        }
-        $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
-        //if(curUser != name){
-          $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
-       // }
-          
+    function positionSuccess(position) {
+        var lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+        //consult the yahoo service
+        $.ajax({
+          type: "GET",
+          url: "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20geo.placefinder%20where%20text%3D%22"+lat+"%2C"+lon+"%22%20and%20gflags%3D%22R%22&format=json",
+          dataType: "json",
+           success: function(data) {
+            socket.emit("countryUpdate", {country: data.query.results.Result.countrycode});
+          }
+        });
       }
-      //peopleOnline.push(obj.name);
     });
 
-    /*var whisper = $("#whisper").prop('checked');
-    if (whisper) {
-      $("#msg").typeahead({
-          local: peopleOnline
-      }).each(function() {
-         if ($(this).hasClass('input-lg'))
-              $(this).prev('.tt-hint').addClass('hint-lg');
-      });
-    }*/
-  });
+    $("#show_finish").on('click', function(){
+      alert(1);
+      $("#finish"),show();
+    });
 
-  socket.on("chat", function(msTime, person, msg, file) {
-    if(file==0){
-      $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
-    }else{
-      $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
-    }
-    
-    //clear typing field
-     $("#"+person.name+"").remove();
-     clearTimeout(timeout);
-     timeout = setTimeout(timeoutFunction, 0);
-  });
+    socket.on("history", function(data) {
+      if (data.length !== 0) {
+        $("#msgs").append("<li><strong><span class='text-warning'>Last 10 messages:</li>");
+        $.each(data, function(data, msg) {
+          $("#msgs").append("<li><span class='text-warning'>" + msg + "</span></li>");
+        });
+      } else {
+        $("#msgs").append("<li><strong><span class='text-warning'>No past messages in this room.</li>");
+      }
+    });
 
-  socket.on("private_chat", function(msTime, person, msg, file) {
-    if(file==0){
-      $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
-    }else if(file==2){
-      $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#modal"+msg+"' > "+msg+" set up your info for trade room  </a></li>");
-      //$("#private_actions").hide();
-    }
-    else if(file==3){
-      $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#uploadFile' > "+msg+" set up your secret file  </a></li>");
-    }
-    else if(file==4){
-      $("#private_msgs").append("<li><strong><span class='text-success'><a href='#' data-toggle='modal' data-target='#drawModal' > "+msg+"</a></li>");
-    }
-    else if(file==5){
-      $("#private_msgs").append("<li><strong><span class='text-success'><a href="+msg+" target='_blank'> Notify to other end </a></li>");
-    }
-    else{
-      $("#private_msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
-    }
-    
-    //clear typing field
-     $("#"+person.name+"").remove();
-     clearTimeout(timeout);
-     timeout = setTimeout(timeoutFunction, 0);
-  });
+    socket.on("update", function(msg) {
+      $("#msgs").append("<li>" + msg + "</li>");
+    });
 
-  socket.on("whisper", function(msTime, person, msg) {
-    if (person.name === "You") {
-      s = "private messaeged"
-    } else {
-      s = "private messaeged"
-    }
-    $("#msgs").append("<li><strong><span class='text-muted'>" + timeFormat(msTime) + person.name + "</span></strong> "+s+": " + msg + "</li>");
-  });
+    socket.on("update_private", function(msg) {
+      $("#private_conversation").show();
+      $("#private_chatForm").show();
+      $("#private_msgs").append("<li>" + msg + "</li>");
+    });
 
-  socket.on("roomList", function(data) {
-    $("#rooms").text("");
-    $("#rooms").append("<li class=\"list-group-item active\">List of rooms <span class=\"badge\">"+data.count+"</span></li>");
-     if (!jQuery.isEmptyObject(data.rooms)) { 
-      var type = data.type; 
-      console.log("chat :"+ type);
-      $.each(data.rooms, function(id, room) {
-        if(room.chat == type){
-          console.log("roomchat :"+ curUser);
-          console.log("invitee :"+ room.invited);
-          var html ="";
-          if(room.invited == curUser ){
-             var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>";
+    socket.on("update_private_msg", function(msg) {
+      $("#private_msg").val(msg);
+    });
+
+    socket.on("update-people", function(data){
+      //var peopleOnline = [];
+      $("#people").empty();
+      $("#users").empty();
+      $('#people').append("<li class=\"list-group-item active\">People online <span class=\"badge\">"+data.count+"</span></li>");
+      var type = data.type;
+      var name = data.user;
+      $.each(data.people, function(a, obj) {
+        if(obj.type === type ){
+          if (!("country" in obj)) {
+            html = "";
+          } else {
+            html = "<img class=\"flag flag-"+obj.country+"\"/>";
           }
-          $('#rooms').append("<li id="+id+" class=\"list-group-item\"><span>" + room.name + "</span> " + html + "</li>");
+          $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
+          //if(curUser != name){
+            $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
+         // }
+            
         }
-        
+        //peopleOnline.push(obj.name);
       });
-    } else {
-      $("#rooms").append("<li class=\"list-group-item\">There are no rooms yet.</li>");
-    }
-  });
 
-  socket.on("sendRoomID", function(data) {
-    myRoomID = data.id;
-  });
+      /*var whisper = $("#whisper").prop('checked');
+      if (whisper) {
+        $("#msg").typeahead({
+            local: peopleOnline
+        }).each(function() {
+           if ($(this).hasClass('input-lg'))
+                $(this).prev('.tt-hint').addClass('hint-lg');
+        });
+      }*/
+    });
 
-  socket.on("sendprivateRoomID", function(data) {
-    privateRoomID = data.id;
-  });
+    socket.on("chat", function(msTime, person, msg, file) {
+      if(file==0){
+        $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
+      }else{
+        $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
+      }
+      
+      //clear typing field
+       $("#"+person.name+"").remove();
+       clearTimeout(timeout);
+       timeout = setTimeout(timeoutFunction, 0);
+    });
 
-  socket.on("show_actions", function(data) {
-    $("#private_actions").show();
-  });
+    socket.on("private_chat", function(msTime, person, msg, file) {
+      if(file==0){
+        $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
+      }else if(file==2){
+        $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='#'> Seller set up your info for trade room. Buyer has finished his. </a></li>");
+      }
+      else if(file==3){
+        $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='#' id='show_finish'> Buyer you are ready to finish the private chat. Seller uploaded the secret file </a></li>");
+        $("#buyerFinish").show();        
+      }
+      else if(file==5){
+        $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href="+msg+" target='_blank'> Notify to other end </a></li>");
+      }
+      else{
+        $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
+      }
+      
+      //clear typing field
+       $("#"+person.name+"").remove();
+       clearTimeout(timeout);
+       timeout = setTimeout(timeoutFunction, 0);
+    });
 
-  socket.on("sendUser", function(data) {
-    curUser = data.user;
-  });
+    socket.on("whisper", function(msTime, person, msg) {
+      if (person.name === "You") {
+        s = "private messaeged"
+      } else {
+        s = "private messaeged"
+      }
+      $("#msgs").append("<li><strong><span class='text-muted'>" + timeFormat(msTime) + person.name + "</span></strong> "+s+": " + msg + "</li>");
+    });
 
-  socket.on("disconnect", function(){
-    $("#msgs").append("<li><strong><span class='text-warning'>The server is not available</span></strong></li>");
-    $("#msg").attr("disabled", "disabled");
-    $("#send").attr("disabled", "disabled");
-  });
+    socket.on("roomList", function(data) {
+      $("#rooms").text("");
+      $("#rooms").append("<li class=\"list-group-item active\">List of rooms <span class=\"badge\">"+data.count+"</span></li>");
+       if (!jQuery.isEmptyObject(data.rooms)) { 
+        var type = data.type; 
+        console.log("chat :"+ type);
+        $.each(data.rooms, function(id, room) {
+          if(room.chat == type){
+            console.log("roomchat :"+ curUser);
+            console.log("invitee :"+ room.invited);
+            var html ="";
+            if(room.invited == curUser ){
+               var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>";
+            }
+            $('#rooms').append("<li id="+id+" class=\"list-group-item\"><span>" + room.name + "</span> " + html + "</li>");
+          }
+          
+        });
+      } else {
+        $("#rooms").append("<li class=\"list-group-item\">There are no rooms yet.</li>");
+      }
+    });
+
+    socket.on("sendRoomID", function(data) {
+      myRoomID = data.id;
+    });
+
+    socket.on("sendprivateRoomID", function(data) {
+      privateRoomID = data.id;
+    });
+
+
+    socket.on("show_actions", function(data) {
+      $("#private_actions").show();
+    });
+    socket.on("show_file_upload", function(data) {
+      $("#sellerFile").show();
+    });
+
+    socket.on("show_seller_actions", function(data) {
+      $("#seller_actions").show();
+    })
+
+    socket.on("sendUser", function(data) {
+      curUser = data.user;
+    });
+
+    socket.on("disconnect", function(){
+      $("#msgs").append("<li><strong><span class='text-warning'>The server is not available</span></strong></li>");
+      $("#msg").attr("disabled", "disabled");
+      $("#send").attr("disabled", "disabled");
+    });
 
 });
