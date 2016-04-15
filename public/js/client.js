@@ -221,7 +221,6 @@ $(document).ready(function() {
   $("#file_pass").keypress(function(e){
     var name = $("#file_pass").val();
     if(name.length < 2) {
-        e.preventDefault();
         $("#uploadForm").hide();
         $("#errors1").empty();
         $("#errors1").show();
