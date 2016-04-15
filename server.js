@@ -12,8 +12,8 @@ var express = require('express')
 var multer  = require('multer');
 var done=false;
 //var ip_address = 'smb://192.168.0.10/db/ichat.db';
-//var ip_address = '/Applications/XAMPP/htdocs/ichatmn-web';
-var ip_address = '/opt/lampp/htdocs/ichatmn-web';
+var ip_address = '/Applications/XAMPP/htdocs/ichatmn-web';
+//var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 var internal = 'localhost';
 var ip_run = "192.168.0.10"; //127.0.0.1
 
@@ -395,6 +395,7 @@ io.sockets.on("connection", function (socket) {
 
 		sizePeople = _.size(people);
 		sizeRooms = _.size(rooms);
+		socket.emit("setme", {name: name});
 		io.sockets.emit("update-people", {people: people, count: sizePeople, type: chat_id, user: people[socket.id].name });
 		socket.emit("roomList", {rooms: rooms, count: sizeRooms, type: chat_id});
 		sockets.push(socket);
@@ -427,15 +428,7 @@ io.sockets.on("connection", function (socket) {
 			io.sockets.in(socket.room).emit("isTyping", {isTyping: data, person: people[socket.id].name});
 	});
 	
-	socket.on("send", function(msTime, encrypted) {
-		var crypto = require('crypto'),
-    	algorithm = 'aes-256-ctr',
-    	password = 'd6F3Efeq';
-
-		var decipher = crypto.createDecipher(algorithm,password);
-  		var msg = decipher.update(encrypted,'hex','utf8');
-  		msg += decipher.final('utf8');
-
+	socket.on("send", function(msTime, msg) {
 		//process.exit(1);
 		var re = /^[w]:.*:/;
 		var whisper = re.test(msg);
@@ -510,6 +503,9 @@ io.sockets.on("connection", function (socket) {
 				socket.emit("update", "Please connect to a room.");
 		    	}
 		}
+		sizePeople = _.size(people);
+		sizeRooms = _.size(rooms);
+		io.sockets.emit("update-people", {people: people, count: sizePeople, type: chat_id, user: people[socket.id].name });
 	});
 
 	socket.on("private_send", function(msTime, msg) {
@@ -608,6 +604,9 @@ io.sockets.on("connection", function (socket) {
 				socket.emit("private_update", "Please connect to a room.");
 		    }
 		}
+		sizePeople = _.size(people);
+		sizeRooms = _.size(rooms);
+		io.sockets.emit("update-people", {people: people, count: sizePeople, type: chat_id, user: people[socket.id].name });
 	});
 
 	socket.on("disconnect", function() {

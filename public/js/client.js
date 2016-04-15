@@ -93,11 +93,6 @@ $(document).ready(function() {
   var lock= new PatternLock('#patternHolder',{matrix:[5,5]});
   var lock1= new PatternLock('#patternHolder1',{matrix:[5,5]});
     
-  // This demo depends on the canvas element
-  if(!('getContext' in document.createElement('canvas'))){
-    alert('Sorry, it looks like your browser does not support canvas!');
-    return false;
-  }
   var ip_run = 'localhost'; //159.203.105.18
   //setup "global" variables first
   var socket = io.connect("127.0.0.1:8080");
@@ -209,15 +204,7 @@ $(document).ready(function() {
   $("#chatForm").submit(function() {
     var msg = $("#msg").val();
     if (msg !== "") {
-      var crypto = require('crypto');
-      algorithm = 'aes-256-ctr';
-      password = 'd6F3Efeq';
-
-      var cipher = crypto.createCipher(algorithm,password);
-      var crypted = cipher.update(msg,'utf8','hex');
-      crypted += cipher.final('hex');
-
-      socket.emit("send", new Date().getTime(), crypted);
+      socket.emit("send", new Date().getTime(), msg);
       $("#msg").val("");
     }
   });
@@ -278,9 +265,6 @@ $(document).ready(function() {
 
   $("#showCreateRoom").click(function() {
     $("#createRoomForm").toggle();
-  });
-  $("#showCreateRoom").click(function() {
-      $("#createRoomForm").toggle();
   });
 
   $("#createRoomBtn").click(function() {
@@ -597,19 +581,15 @@ $(document).ready(function() {
       $("#users").empty();
       $('#people').append("<li class=\"list-group-item active\">People online <span class=\"badge\">"+data.count+"</span></li>");
       var type = data.type;
-      var name = data.user;
+      var name = $("#me").val();
+      console.log(name);
       $.each(data.people, function(a, obj) {
         if(obj.type === type ){
-          if (!("country" in obj)) {
-            html = "";
-          } else {
-            html = "<img class=\"flag flag-"+obj.country+"\"/>";
-          }
-          $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
-          //if(curUser != name){
+          $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
+          console.log(obj);
+          if(obj.name != name){
             $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
-         // }
-            
+           }
         }
         //peopleOnline.push(obj.name);
       });
@@ -678,10 +658,10 @@ $(document).ready(function() {
         console.log("chat :"+ type);
         $.each(data.rooms, function(id, room) {
           if(room.chat == type){
-            console.log("roomchat :"+ curUser);
+            console.log("roomchat :"+ data.user);
             console.log("invitee :"+ room.invited);
             var html ="";
-            if(room.invited == curUser ){
+            if(room.invited == data.user ){
                var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>";
             }
             $('#rooms').append("<li id="+id+" class=\"list-group-item\"><span>" + room.name + "</span> " + html + "</li>");
@@ -714,7 +694,12 @@ $(document).ready(function() {
     })
 
     socket.on("sendUser", function(data) {
-      curUser = data.user;
+      data.user = data.user;
+    });
+
+    socket.on("setme", function(data) {
+      console.log(data);
+      $("#me").val(data.name); 
     });
 
     socket.on("disconnect", function(){
