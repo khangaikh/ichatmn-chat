@@ -427,7 +427,20 @@ $(document).ready(function() {
 
   $("#createSeller").click(function() {
 
-    var pass = lock1.getPattern(); 
+   var pattern = lock1.getPattern(); 
+
+    var arr = pattern.split('-');
+    var pass=arr[0];
+    var temp =arr[0];
+    console.log(pattern);
+    console.log(arr);
+    for(var i=0; i<arr.length; i++){
+      if(arr[i]!=temp){
+        temp=arr[i];
+        pass = pass+''+temp;  
+      }
+    }
+    console.log(pass);
     var user_link = $("#userPhoto").val();
 
     var roomID = privateRoomID;
@@ -457,7 +470,7 @@ $(document).ready(function() {
         pass = pass+''+temp;  
       }
     }
-
+    console.log(pass);
     var user_link = $("#userPhoto").val();
     var interest = $("#interest").val();
     var roomID = privateRoomID;
@@ -465,27 +478,6 @@ $(document).ready(function() {
     var a2 = $("#ans2").val();
     var a3 = $("#ans3").val();
     var user_link = $("#userPhoto").val();
-    /*var myTableArray = [];
-
-    $("#draw1 tr").each(function() {
-        var arrayOfThisRow = [];
-        var tableData = $(this).find('td');
-
-        if (tableData.hasClass('highlighted')) {
-            tableData.each(function() { arrayOfThisRow.push(1); });
-        }else{
-            tableData.each(function() { arrayOfThisRow.push(0); });
-        }
-        myTableArray.push(arrayOfThisRow);
-    });
-
-    var str = myTableArray.toString();
-    var interest = $("#interest").val();
-    var time = $("#time").val();
-    var minute = $("#minute").val();
-    var pass = $("#user_pass").val();
-    
-    var dataURL = canvas[0].toDataURL();*/ 
 
     socket.emit("save_user", interest, '1', '1', pass, roomID, curUser, a1, a2, a3, user_link, function(data) {
        alert(data);
