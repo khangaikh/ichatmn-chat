@@ -444,7 +444,20 @@ $(document).ready(function() {
 
   $("#createKey").click(function() {
 
-    var pass = lock.getPattern(); 
+    var pattern = lock.getPattern(); 
+
+    var arr = pattern.split('-');
+    var pass=arr[0];
+    var temp =arr[0];
+    console.log(pattern);
+    console.log(arr);
+    for(var i=0; i<arr.length; i++){
+      if(arr[i]!=temp){
+        temp=arr[i];
+        pass = pass+''+temp;  
+      }
+    }
+
     var user_link = $("#userPhoto").val();
     var interest = $("#interest").val();
     var roomID = privateRoomID;
