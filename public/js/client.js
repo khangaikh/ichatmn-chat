@@ -441,13 +441,13 @@ $(document).ready(function() {
       }
     }
     console.log(pass);
-    var user_link = $("#userPhoto").val();
 
     var roomID = privateRoomID;
     var a1 = $("#ans11").val();
     var a2 = $("#ans21").val();
     var a3 = $("#ans31").val();
     var user_link = $("#userPhoto1").val();
+    
     console.log(a1);
     console.log(a2);
     console.log(a3);
