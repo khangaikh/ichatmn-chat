@@ -447,7 +447,7 @@ $(document).ready(function() {
     var a2 = $("#ans21").val();
     var a3 = $("#ans31").val();
     var user_link = $("#userPhoto1").val();
-    
+
     console.log(a1);
     console.log(a2);
     console.log(a3);
@@ -489,6 +489,7 @@ $(document).ready(function() {
            $("#private_msgs").append("<li> <a href='#' data-toggle='modal' data-target='#modalSeller' > Send seller for notify </a></li>");
         }
     });
+    socket.emit("show_seller_actions_1", "Notify to>Seller");
   });
 
   $("#rooms").on('click', '.joinRoomBtn', function() {
@@ -632,6 +633,8 @@ $(document).ready(function() {
         $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
       }else if(file==2){
         $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='#'> Seller set up your info for trade room. Buyer has finished his. </a></li>");
+
+        $("#sellerActions").show();
       }
       else if(file==3){
         $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='#' id='show_finish'> Buyer you are ready to finish the private chat. Seller uploaded the secret file </a></li>");
@@ -700,7 +703,12 @@ $(document).ready(function() {
 
     socket.on("show_seller_actions", function(data) {
       $("#seller_actions").show();
-    })
+    });
+
+    socket.on("show_seller_actions_1", function(data) {
+      console.log(data);
+      $("#sellerActions").show();
+    });
 
     socket.on("sendUser", function(data) {
       curUser = data.user;

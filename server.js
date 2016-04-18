@@ -551,6 +551,7 @@ io.sockets.on("connection", function (socket) {
 				}
 				else if(msg.indexOf(str3) != -1){
 					var interest = msg.split(">");
+				
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], interest[1], 2);
 				}
 				else if(msg.indexOf(str4) != -1){
@@ -792,6 +793,7 @@ io.sockets.on("connection", function (socket) {
 		      	});
 		      	db.close();
 		      	socket.emit("update_private_msg", "Notify to>Seller");
+		      	socket.emit("show_seller_actions_1", "Notify to>Seller");
 				console.log("Disconneting from KDS"); 
 				//Saving encrypted key
 			}
@@ -873,36 +875,24 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//User setting functions
-	socket.on("set_user", function( pass, roomID, curUser, image,interest,a1,a2,a3) {
+	socket.on("set_user", function( pass, roomID, curUser, image, interest,a1,a2,a3) {
 		var sqlite3 = require('sqlite3').verbose();
 		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 		console.log(interest);
-		if(interest == 1){
-			console.log("Seller is setting up"); 
-			console.log(a1); 
-			db.run("UPDATE tickets SET seller =?, seller_key =?, secret_draw_seller=?, seller_ans_1=?, seller_ans_2=?, seller_ans_3=? WHERE public_key=?", {
-	          1: curUser,
-	          2: pass,
-	          3: image,
-	          4: a1,
-	          5: a2,
-	          6: a3,
-	          7: roomID
-	      	});
-	      	db.close();
-	      	socket.emit("show_file_upload", "File upload<Seller");
-		}else{
-			console.log("Buyer is setting up");
-			db.run("UPDATE tickets SET buyer =?, buyer_key =? , secret_draw_buyer=? WHERE public_key=?", {
-	          1: curUser,
-	          2: pass,
-	          3: str,
-	          4: roomID
-	      	});
-	      	db.close();
-	      	//socket.emit("update_private_msg", "File upload<Seller");
-		}
-	
+		console.log(a1);
+		console.log("Seller is setting up"); 
+		console.log(a1);
+		db.run("UPDATE tickets SET seller =?, seller_key =?, secret_draw_seller=?, seller_ans_1=?, seller_ans_2=?, seller_ans_3=? WHERE public_key=?", {
+          1: curUser,
+          2: pass,
+          3: image,
+          4: a1,
+          5: a2,
+          6: a3,
+          7: roomID
+      	});
+      	db.close();
+      	socket.emit("show_file_upload", "File upload<Seller");
 	});
 
 	socket.on("check", function(name, fn) {
