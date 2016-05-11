@@ -293,8 +293,10 @@ $(document).ready(function() {
     var a2 = $("#ans2").val();
     var a3 = $("#ans3").val();
 
-    if(a1=="" || a2=="" || a3==""){
-        alert("Please fill your answers");
+
+
+    if(a1=="" || a2=="" || a3=="" || a1.length<4 || a2.length<4 || a3.length<4 || a1.length>26 || a2.length>26 || a3.length>26){
+        alert("Please fill your answers answer shoudl be at least 4 and less then 26");
         e.preventDefault();
         return;
     }else{
@@ -327,7 +329,7 @@ $(document).ready(function() {
     var a2 = $("#ans21").val();
     var a3 = $("#ans31").val();
 
-    if(a1=="" || a2=="" || a3==""){
+    if(a1=="" || a2=="" || a3=="" || a1.length<4 || a2.length<4 || a3.length<4 || a1.length>26 || a2.length>26 || a3.length>26){
         alert("Please fill your answers");
         e.preventDefault();
         return;
