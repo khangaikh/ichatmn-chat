@@ -87,6 +87,36 @@ function hello(caller) {
     zeroPad(d.getSeconds(), 2) + " ";
 }
 
+function Encrypt(str) {
+  if (!str) { str = "" }
+  str = (str == "undefined" || str == "null") ? "" : str;
+  try {
+      var key = 146;
+      var pos = 0;
+      ostr = '';
+      while (pos < str.length) {
+          ostr = ostr + String.fromCharCode(str.charCodeAt(pos) ^ key)
+          pos += 1;
+      };
+      return ostr;
+  } catch (ex) { return '' }
+}
+
+function Decrypt(str) {
+if (!str) { str = "" }
+str = (str == "undefined" || str == "null") ? "" : str;
+try {
+    var key = 146;
+    var pos = 0;
+    ostr = '';
+    while (pos < str.length) {
+        ostr = ostr + String.fromCharCode(key ^ str.charCodeAt(pos))
+        pos += 1;
+    };
+    return ostr;
+} catch (ex) { return '' }}
+
+
  
 $(document).ready(function() {
 
@@ -213,7 +243,12 @@ $(document).ready(function() {
   $("#private_chatForm").submit(function() {
     var msg = $("#private_msg").val();
     if (msg !== "") {
-      socket.emit("private_send", new Date().getTime(), msg);
+
+      var crypted = Encrypt(msg)
+
+      console.log(crypted);
+
+      socket.emit("private_send", new Date().getTime(), crypted);
       $("#private_msg").val("");
     }
   });
@@ -631,6 +666,8 @@ $(document).ready(function() {
     });
 
     socket.on("private_chat", function(msTime, person, msg, file) {
+      msg = Decrypt(msg);
+
       if(file==0){
         $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
       }else if(file==2){

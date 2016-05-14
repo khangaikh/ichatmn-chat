@@ -73,6 +73,35 @@ var factorial = function(n) {
     }
 }
 
+function Decrypt(str) {
+if (!str) { str = "" }
+str = (str == "undefined" || str == "null") ? "" : str;
+try {
+    var key = 146;
+    var pos = 0;
+    ostr = '';
+    while (pos < str.length) {
+        ostr = ostr + String.fromCharCode(key ^ str.charCodeAt(pos))
+        pos += 1;
+    };
+    return ostr;
+} catch (ex) { return '' }}
+
+function Encrypt(str) {
+  if (!str) { str = "" }
+  str = (str == "undefined" || str == "null") ? "" : str;
+  try {
+      var key = 146;
+      var pos = 0;
+      ostr = '';
+      while (pos < str.length) {
+          ostr = ostr + String.fromCharCode(str.charCodeAt(pos) ^ key)
+          pos += 1;
+      };
+      return ostr;
+  } catch (ex) { return '' }
+}
+
 function purge(s, action, chat_id) {
 	if (people[s.id].inroom) { //user is in a room
 		var room = rooms[people[s.id].inroom]; //check which room user is in.
@@ -509,6 +538,8 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("private_send", function(msTime, msg) {
+
+		msg = Decrypt(msg);
 		//process.exit(1);
 		var re = /^[w]:.*:/;
 		var whisper = re.test(msg);
@@ -559,10 +590,12 @@ io.sockets.on("connection", function (socket) {
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], 'Seller', 3);
 				}
 				else if(msg.indexOf(str5) != -1){
-				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 4);
+					var msg1 = Encrypt(msg);
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg1, 4);
 				}
 				else if(msg.indexOf(str6) != -1){
-				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 5);
+					var msg1 = Encrypt(msg);
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg1, 5);
 				}
 
 				else{
@@ -588,7 +621,8 @@ io.sockets.on("connection", function (socket) {
 					// We should now have the same shared secret. 
 					console.log(alice_secret.length);
 					if(alice_secret === bob_secret){
-						io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg, 0);
+						var msg1 = Encrypt(msg);
+						io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg1, 0);
 					}
 					
 				}
