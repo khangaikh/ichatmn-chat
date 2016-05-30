@@ -1,13 +1,15 @@
-function Room(name, id, owner, chat) {
+function Room(name, id, owner, chat, user) {
   this.name = name;
   this.id = id;
   this.owner = owner;
+  this.created = user;
   this.invited = "0";
   this.people = [];
-  this.peopleLimit = 10;
+  this.peopleLimit = 2;
   this.status = "available";
   this.private = false;
   this.chat = chat;
+  this.chating = false;
 };
 
 Room.prototype.addPerson = function(personID) {
@@ -39,6 +41,10 @@ Room.prototype.getLimit = function(limit) {
     return this.peopleLimit;
   }
 };
+
+Room.prototype.setChating = function() {
+  this.chating = true;
+}
 
 Room.prototype.getChat = function() {
   if (this.status === "available") {
@@ -75,5 +81,6 @@ Room.prototype.isAvailable = function() {
 Room.prototype.isPrivate = function() {
   return this.private;
 };
+;
 
 module.exports = Room;

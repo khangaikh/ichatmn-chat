@@ -53,12 +53,21 @@
         </form>
       </div>
     </div>
+    <div class="row" id="main-header" style="display:none">
+      <div class="col-md-4" id="no-show2"></div>
+      <div class="col-md-4">
+        <h2>iChat.mn list tradings</h2>
+        <a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal" style="float:right">Create chat topic</a>
+      </div>
+    </div>
     <div class="row" id="main-chat-screen">
-      <div class="col-md-2">
+      <div class="col-md-4" id="no-show">
+      </div>
+      <div class="col-md-4">
         <ul id="rooms" class="list-group"></ul>
         <ul id="people" class="list-group"></ul>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6" style="display:none">
         <div id="conversation">
           <ul id="msgs" class="list-unstyled"></ul>
         </div>
@@ -79,7 +88,7 @@
           </div>
         </form>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-6">
         <div id="private_conversation">
           <h4>Private Chat </h4>
           <ul id="private_msgs" class="list-unstyled"></ul>
@@ -121,22 +130,16 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="createRoomLabel">Create private room</h4>
+          <h4 class="modal-title" id="createRoomLabel">Create chating topic</h4>
         </div>
         <div class="modal-body">
-          <p>You can  create a private chat room here. Names have to be unique. </p>
-          <br>
           <form class="form-inline" id="createRoomForm">
-            Room name :
-            <input type="text" class="form-control input-lg"  placeholder="Room name" id="createRoomName">
-            Invite user :
-            <select id="users" class="form-control input-lg">
-            </select>
+            <input type="text" class="form-control input-lg"  placeholder="Please write your chating topic" id="createRoomName" style="width:100%">
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-          <button data-dismiss="modal" id="createRoomBtn" class="btn btn-success btn-lg">Create room</button>
+          <button data-dismiss="modal" id="createRoomBtn" class="btn btn-success btn-lg">Create topic</button>
         </div>
       </div>
     </div>

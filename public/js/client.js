@@ -61,6 +61,7 @@ function toggleNameForm() {
 
 function toggleChatWindow() {
   $("#main-chat-screen").toggle();
+  $("#main-header").toggle();
 }
 
 // Pad n to specified size by prepending a zeros
@@ -314,7 +315,9 @@ $(document).ready(function() {
           $("#errors").append("Room <i>" + roomName + "</i> already exists");
         } else {      
         if (roomName.length > 0) { //also check for roomname
-          socket.emit("createRoom", roomName, invite);
+          socket.emit("createRoom", roomName, invite, curUser);
+          $("#no-show").hide();
+          $("#no-show2").hide();
           $("#errors").empty();
           $("#private_actions").show();
           $("#errors").hide();
@@ -532,6 +535,9 @@ $(document).ready(function() {
   $("#rooms").on('click', '.joinRoomBtn', function() {
     var roomName = $(this).siblings("span").text();
     var roomID = $(this).attr("id");
+    $("#no-show2").hide();
+    $("#no-show").hide();
+    socket.emit("changeText", roomID);
     socket.emit("joinRoom", roomID);
   });
 
@@ -703,17 +709,36 @@ $(document).ready(function() {
 
     socket.on("roomList", function(data) {
       $("#rooms").text("");
-      $("#rooms").append("<li class=\"list-group-item active\">List of rooms <span class=\"badge\">"+data.count+"</span></li>");
+      $("#rooms").append("<li class=\"list-group-item active\">List of chat topics <span class=\"badge\">"+data.count+"</span></li>");
        if (!jQuery.isEmptyObject(data.rooms)) { 
         var type = data.type; 
         console.log("chat :"+ type);
         $.each(data.rooms, function(id, room) {
-          if(room.chat == type){
+          if(room.chat == type && id!=1){
             console.log("roomchat :"+ curUser);
             console.log("invitee :"+ room.invited);
             var html ="";
-            if(room.invited == curUser ){
-               var html = "<button id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Join</button>";
+            console.log("Owner");
+            console.log(room.owner);
+            console.log("curUser");
+            console.log(curUser);
+
+            if(room.created != curUser ){
+              console.log(data.chatedId);
+              console.log(id);
+              console.log(room.id);
+              console.log(room.chating);
+                
+              if(room.chating){
+                var html = "<button style='float:right' id="+id+" class='joinRoomBtn1 btn btn-default btn-xs' >Chating</button>";
+              }else{
+                var html = "<button style='float:right' id="+id+" class='joinRoomBtn btn btn-default btn-xs' >Chat</button>";
+              }
+                  
+                
+    
+            }else{
+               var html = "<p style='float:right'>Owner</p>";
             }
             $('#rooms').append("<li id="+id+" class=\"list-group-item\"><span>" + room.name + "</span> " + html + "</li>");
           }

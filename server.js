@@ -383,10 +383,10 @@ io.sockets.on("connection", function (socket) {
 		  return dec;
 		}
 
-		_.find(people, function(key,value) {
+		/*_.find(people, function(key,value) {
 			if (key.name.toLowerCase() === name.toLowerCase())
 				return exists = true;
-		});
+		});*/
 	
 		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": chat_id};
 		var message = "You have connected to the server.";
@@ -721,16 +721,17 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//Room functions
-	socket.on("createRoom", function(name,invite) {
+	socket.on("createRoom", function(name,invite,user) {
 		if (!people[socket.id].owns) {
 			console.log(id + " is creating new room");  
 			var id = uuid.v4();
-			var room = new Room(name, id, socket.id, chat_id);
+			var room = new Room(name, id, socket.id, chat_id, user);
+			room.setLimit(2);
 			room.setLimit(2);
 			room.setInvitee(invite);
 			rooms[id] = room;
 			sizeRooms = _.size(rooms);
-			io.sockets.emit("roomList", {rooms: rooms, count: sizeRooms, type: chat_id });
+			io.sockets.emit("roomList", {rooms: rooms, count: sizeRooms, type: chat_id, chatedId:1 });
 			//add room to socket, and auto join the creator of the room
 			//socket.room = name;
 			//socket.join(socket.room);
@@ -744,6 +745,15 @@ io.sockets.on("connection", function (socket) {
 		} else {
 			socket.emit("update", "You have already created a room.");
 		}
+	});
+
+	socket.on("changeText", function(roomID) {
+		
+		var room = rooms[roomID];
+		room.setChating();
+		rooms[roomID] = room;
+		io.sockets.emit("roomList", {rooms: rooms, count: sizeRooms, type: chat_id, chatedId:roomID });
+		
 	});
 
 	//User save functions
