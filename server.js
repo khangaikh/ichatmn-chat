@@ -46,6 +46,53 @@ app.get('/uploads/*', function(req, res) {
  	res.render('/uploads');
 });
 
+var path = require('path');
+var mime = require('mime');
+
+app.get('/download?*', function(req, res){
+
+  ;
+
+  var url = require('url');
+  var url_parts = url.parse(req.url, true);
+  var query = url_parts.query;
+
+  console.log(query.item);
+
+  var file = __dirname + '/uploads/'+query.item+'/file.txt';
+
+  var filename = path.basename(file);
+  var mimetype = mime.lookup(file);
+
+  res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+  res.setHeader('Content-type', mimetype);
+
+  var filestream = fs.createReadStream(file);
+  filestream.pipe(res);
+});
+
+app.get('/permission?*', function(req, res){
+
+  ;
+
+  var url = require('url');
+  var url_parts = url.parse(req.url, true);
+  var query = url_parts.query;
+
+  console.log(query.item);
+
+  var file = __dirname + '/uploads/'+query.item+'/file.pem';
+
+  var filename = path.basename(file);
+  var mimetype = mime.lookup(file);
+
+  res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+  res.setHeader('Content-type', mimetype);
+
+  var filestream = fs.createReadStream(file);
+  filestream.pipe(res);
+});
+
 var url = require('url');
 
 var SPEKE = require('./node_modules/speke/index');
@@ -243,7 +290,7 @@ io.sockets.on("connection", function (socket) {
 
 		  		var mkdirp = require('mkdirp');
 
-		  		var dir = 'http://localhost/key_distribution/'+params.roomID;
+		  		var dir = __dirname + '/uploads/'+params.roomID;
 
 		  		var sqlite3 = require('sqlite3').verbose();
 				var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
@@ -257,7 +304,7 @@ io.sockets.on("connection", function (socket) {
 				mkdirp(dir, function(err) { 
 				    console.log('Check directory.');
 				});
-
+				
 				var crypto = require('crypto'),
     			algorithm = 'aes-256-ctr',
     			password = 'd6F3Efeq';
@@ -266,31 +313,23 @@ io.sockets.on("connection", function (socket) {
   				var crypted = cipher.update(file.name,'utf8','hex')
   				crypted += cipher.final('hex');
 
-				var shares = secrets.share(crypted, 10, 5); 
-				console.log(file.name);
-				console.log(file.buffer);
-				console.log(shares[0]);
 				var fs = require('fs');
+				var filePath= dir+'/'+'file.txt';
 
-				for(var i=0; i<5; i++){
-					var filePath= dir+'/'+ i;
-					fs.writeFile(filePath, shares[i], function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }
-					    
-					});
-					j=i+1;
-					var slice = file.buffer.slice(j, 256)
-					fs.writeFile(filePath, slice, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }
-					    console.log("The file was saved!");
-					});
-				}
-
+				fs.writeFile(filePath, file.buffer, function(err) {
+				    if(err) {
+				        return console.log(err);
+				    }    
+				});
+				var filePath= dir+'/'+'file.pem';
+				fs.writeFile(filePath, crypted, function(err) {
+				    if(err) {
+				        return console.log(err);
+				    }    
+				});
+		    	
 		    	console.log('File saved.');
+		    	socket.emit("update_private_msg", "fileexeptions-"+params.roomID);
 		  	};
 		});
 	});
@@ -576,6 +615,7 @@ io.sockets.on("connection", function (socket) {
 				var str4 = "File Uploaded";
 				var str5 = "Draw your secret key<";
 				var str6 = "http://localhost:8081/?id=";
+				var str7 = "fileexeptions";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], filename[1], 1);
@@ -596,6 +636,11 @@ io.sockets.on("connection", function (socket) {
 				else if(msg.indexOf(str6) != -1){
 					var msg1 = Encrypt(msg);
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg1, 5);
+				}
+				else if(msg.indexOf(str7) != -1){
+					var msg1 = Encrypt(msg);
+					var arr = msg1.split('-');
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], arr[1], 6);
 				}
 
 				else{

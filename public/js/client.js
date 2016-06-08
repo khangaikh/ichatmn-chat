@@ -397,6 +397,7 @@ $(document).ready(function() {
   $("#sendImage1").click(function(e) {
 
       var user_link = $("#userPhoto").val();
+      
       if(user_link==""){
         alert("Please select your photo and paste it here");
         e.preventDefault();
@@ -410,6 +411,13 @@ $(document).ready(function() {
       $("#createKey").show();
       $("#clearing").show();
   });
+
+  $("#clickdownload").click(function(e) {
+
+      
+  });
+
+
 
   $("#sendImage4").click(function(e) {
 
@@ -492,8 +500,8 @@ $(document).ready(function() {
     console.log(a2);
     console.log(a3);
     $("#fileupload").show();
-    socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
-  });
+      socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
+    });
 
   $("#createKey").click(function() {
 
@@ -621,7 +629,9 @@ $(document).ready(function() {
     });
 
     socket.on("update_private_msg", function(msg) {
-      $("#private_msg").val(msg);
+      
+       $("#private_msg").val(msg);
+ 
     });
 
     socket.on("update-people", function(data){
@@ -687,6 +697,9 @@ $(document).ready(function() {
       }
       else if(file==5){
         $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href="+msg+" target='_blank'> Notify to other end </a></li>");
+      }
+      else if(file==6){
+        $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/download?item="+msg+"' target='_blank'> Encrypted file </a><br /><a href='/permission?item="+msg+"' target='_blank'> Permission file </a></li>");
       }
       else{
         $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
