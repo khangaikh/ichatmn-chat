@@ -306,6 +306,7 @@ $(document).ready(function() {
   $("#createRoomBtn").click(function() {
     var roomExists = false;
     var roomName = $("#createRoomName").val();
+    var interest = $("#intererstType").val();
     var invite = $("#users").val();
     socket.emit("check", roomName, function(data) {
       roomExists = data.result;
@@ -315,7 +316,7 @@ $(document).ready(function() {
           $("#errors").append("Room <i>" + roomName + "</i> already exists");
         } else {      
         if (roomName.length > 0) { //also check for roomname
-          socket.emit("createRoom", roomName, invite, curUser);
+          socket.emit("createRoom", roomName, invite, curUser, interest);
           $("#no-show").hide();
           $("#no-show2").hide();
           $("#errors").empty();
@@ -683,7 +684,7 @@ $(document).ready(function() {
 
     socket.on("private_chat", function(msTime, person, msg, file) {
       msg = Decrypt(msg);
-
+      console.log(msg);
       if(file==0){
         $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
       }else if(file==2){

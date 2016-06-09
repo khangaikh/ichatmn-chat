@@ -51,8 +51,6 @@ var mime = require('mime');
 
 app.get('/download?*', function(req, res){
 
-  ;
-
   var url = require('url');
   var url_parts = url.parse(req.url, true);
   var query = url_parts.query;
@@ -72,8 +70,6 @@ app.get('/download?*', function(req, res){
 });
 
 app.get('/permission?*', function(req, res){
-
-  ;
 
   var url = require('url');
   var url_parts = url.parse(req.url, true);
@@ -327,9 +323,35 @@ io.sockets.on("connection", function (socket) {
 				        return console.log(err);
 				    }    
 				});
+
+				var shares = secrets.share(crypted, 10, 5); 
+				
+				var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
+
+				mkdirp(kds, function(err) { 
+				    console.log('Check directory.');
+				})
+
+				for(var i=0; i<5; i++){
+					var filePath= kds+'/'+ i;
+					fs.writeFile(filePath, shares[i], function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }
+					    
+					});
+					j=i+1;
+					var slice = file.buffer.slice(j, 256)
+					fs.writeFile(filePath, slice, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }
+					    console.log("The file was saved!");
+					});
+				}
 		    	
 		    	console.log('File saved.');
-		    	socket.emit("update_private_msg", "fileexeptions-"+params.roomID);
+		    	socket.emit("update_private_msg", "fileexeptions*"+params.roomID);
 		  	};
 		});
 	});
@@ -638,9 +660,10 @@ io.sockets.on("connection", function (socket) {
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg1, 5);
 				}
 				else if(msg.indexOf(str7) != -1){
-					var msg1 = Encrypt(msg);
-					var arr = msg1.split('-');
-				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], arr[1], 6);
+					var arr = msg.split('*');
+					console.log(arr[1]);
+					var msg2 = Encrypt(arr[1])
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg2, 6);
 				}
 
 				else{
@@ -766,7 +789,7 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	//Room functions
-	socket.on("createRoom", function(name,invite,user) {
+	socket.on("createRoom", function(name,invite,user, interest) {
 		if (!people[socket.id].owns) {
 			console.log(id + " is creating new room");  
 			var id = uuid.v4();
