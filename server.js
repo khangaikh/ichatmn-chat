@@ -644,8 +644,8 @@ io.sockets.on("connection", function (socket) {
 				}
 				else if(msg.indexOf(str3) != -1){
 					var interest = msg.split(">");
-				
-				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], interest[1], 2);
+					var msg2 = Encrypt(interest[1])
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg2, 2);
 				}
 				else if(msg.indexOf(str4) != -1){
 
