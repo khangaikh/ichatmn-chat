@@ -117,7 +117,7 @@
             </button>
             <ul class="dropdown-menu" role="menu">
               <li style="display:none" id="sellerActions"><a href="#" name="setUp" data-toggle="modal" data-target="#modalSeller">Set up trade info</a></li>
-              <li style="display:none" id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">File</a></li>
+              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">File</a></li>
             </ul>
           </div>
         </form>
@@ -359,7 +359,7 @@
             <br />
             <br />Permission file:
             <input type="file" class="form-control input-lg" name="userPhoto2" />
-            <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
+            <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload1"/>
           </form>
         </div>
       </div>
@@ -382,8 +382,8 @@
           <br>
           <p>You can  upload files up to 5MB. </p>
           <br>
-          <form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline" style="display:none">
-            <input type="file" class="form-control input-lg" name="userPhoto" />
+          <form id ="uploadForm" enctype ="multipart/form-data"   method="post"  class="form-inline" style="display:none">
+            <input type="file" class="form-control input-lg" name="userPhoto" id="secretFile" />
             <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
           </form>
          

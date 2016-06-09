@@ -139,13 +139,14 @@ $(document).ready(function() {
     var delivery = new Delivery(socket);
  
     delivery.on('delivery.connect',function(delivery){
+     
       $("#upload[type=submit]").click(function(evt){
 
-        var file = $("input[type=file]")[0].files[0];
+        var file = $("#secretFile")[0].files[0];
         var extraParams = {roomID: privateRoomID};
         delivery.send(file,extraParams);
         var msg = "File Uploaded";
-        socket.emit("private_send", new Date().getTime(), msg);
+        //socket.emit("private_send", new Date().getTime(), msg);
         evt.preventDefault();
       });
     });
