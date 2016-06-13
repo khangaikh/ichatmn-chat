@@ -300,6 +300,31 @@ io.sockets.on("connection", function (socket) {
 					    console.log('Check directory.');
 					});
 					
+					var crypto = require('crypto'),
+	    			algorithm = 'aes-256-ctr',
+	    			password = 'd6F3Efeq';
+
+	  				var cipher = crypto.createCipher(algorithm,password)
+	  				var crypted = cipher.update(file.name,'utf8','hex')
+	  				crypted += cipher.final('hex');
+
+					var fs = require('fs');
+					var filePath= dir+'/'+'file.key.pem';
+
+					fs.writeFile(filePath, file.buffer, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }    
+					});
+					
+					var filePath= dir+'/'+'file.pub';
+					fs.writeFile(filePath, crypted, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }    
+					});
+
+
 					var fs = require('fs')
 					  , ursa = require('ursa')
 					  , crt
@@ -307,8 +332,8 @@ io.sockets.on("connection", function (socket) {
 					  , msg
 					  ;
 
-					key = ursa.createPrivateKey(fs.readFileSync(dir+'/'+'my-server.key.pem'));
-					crt = ursa.createPublicKey(fs.readFileSync(dir+'/'+'my-server.pub'));
+					key = ursa.createPrivateKey(fs.readFileSync(dir+'/'+'file.key.pem'));
+					crt = ursa.createPublicKey(fs.readFileSync(dir+'/'+'file.pub'));
 					
 					console.log('Encrypt with Public');
 
@@ -321,29 +346,7 @@ io.sockets.on("connection", function (socket) {
 					console.log('Encrypt with Private (called public)');
 					msg = key.privateEncrypt(params.roomID, 'utf8', 'base64');
 
-					var crypto = require('crypto'),
-	    			algorithm = 'aes-256-ctr',
-	    			password = 'd6F3Efeq';
-
-	  				var cipher = crypto.createCipher(algorithm,password)
-	  				var crypted = cipher.update(file.name,'utf8','hex')
-	  				crypted += cipher.final('hex');
-
-					var fs = require('fs');
-					var filePath= dir+'/'+'file.txt';
-
-					fs.writeFile(filePath, file.buffer, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});
 					
-					var filePath= dir+'/'+'file.pem';
-					fs.writeFile(filePath, crypted, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});
 
 					var shares = secrets.share(crypted, 10, 5); 
 					
