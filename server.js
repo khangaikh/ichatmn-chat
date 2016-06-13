@@ -143,6 +143,58 @@ function Encrypt(str) {
   } catch (ex) { return '' }
 }
 
+
+function encrypt(clearText, keySizeBytes, keyPair){
+    var buffer = new Buffer(clearText);
+    var maxBufferSize = keySizeBytes - 42; //according to ursa documentation
+    var bytesDecrypted = 0;
+    var encryptedBuffersList = [];
+
+    //loops through all data buffer encrypting piece by piece
+    while(bytesDecrypted < buffer.length){
+        //calculates next maximun length for temporary buffer and creates it
+        var amountToCopy = Math.min(maxBufferSize, buffer.length - bytesDecrypted);
+        var tempBuffer = new Buffer(amountToCopy);
+
+        //copies next chunk of data to the temporary buffer
+        buffer.copy(tempBuffer, 0, bytesDecrypted, bytesDecrypted + amountToCopy);
+
+        //encrypts and stores current chunk
+        var encryptedBuffer = keyPair.encrypt(tempBuffer);
+        encryptedBuffersList.push(encryptedBuffer);
+
+        bytesDecrypted += amountToCopy;
+    }
+
+    //concatenates all encrypted buffers and returns the corresponding String
+    return Buffer.concat(encryptedBuffersList).toString('base64');
+}
+
+function decrypt(encryptedString, keySizeBytes,keyPair){
+
+    var encryptedBuffer = new Buffer(encryptedString, 'base64');
+    var decryptedBuffers = [];
+    var ursa = require("ursa");
+    //if the clear text was encrypted with a key of size N, the encrypted 
+    //result is a string formed by the concatenation of strings of N bytes long, 
+    //so we can find out how many substrings there are by diving the final result
+    //size per N
+    var totalBuffers = encryptedBuffer.length / keySizeBytes;
+
+    //decrypts each buffer and stores result buffer in an array
+    for(var i = 0 ; i < totalBuffers; i++){
+        //copies next buffer chunk to be decrypted in a temp buffer
+        var tempBuffer = new Buffer(keySizeBytes);
+        encryptedBuffer.copy(tempBuffer, 0, i*keySizeBytes, (i+1)*keySizeBytes);
+        //decrypts and stores current chunk
+        var decryptedBuffer = keyPair.decrypt(tempBuffer,'base64','base64',ursa.RSA_NO_PADDING);
+        decryptedBuffers.push(decryptedBuffer);
+    }
+
+    //concatenates all decrypted buffers and returns the corresponding String
+    return Buffer.concat(decryptedBuffers).toString();
+}
+
 function purge(s, action, chat_id) {
 	if (people[s.id].inroom) { //user is in a room
 		var room = rooms[people[s.id].inroom]; //check which room user is in.
@@ -270,6 +322,26 @@ io.sockets.on("connection", function (socket) {
 	delivery.on('receive.success',function(file){
 		var params = file.params;
 		console.log("Room id 1: "+params.roomID);
+		var fs = require('fs');
+
+		var ursa = require("ursa");
+
+		var keySizeBits = 1024;
+		var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
+
+		var crt
+		  , key
+		  , msg
+		  ;
+
+		//var keySizeBits = 1024;
+		//var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
+		//var pem =ursa.toPublicPem(keyPair,"sha256");
+		var pubPem = keyPair.toPublicPem('base64');
+		console.log('privPem:', pubPem);
+
+		crt = ursa.createPublicKey(pubPem,'base64')
+
 		//When file is recieved
 		if(params.type==1){
 			fs.writeFile(file.name,file.buffer, function(err){
@@ -305,28 +377,14 @@ io.sockets.on("connection", function (socket) {
 	    			password = 'd6F3Efeq';
 
 	  				var cipher = crypto.createCipher(algorithm,password)
-	  				var crypted = cipher.update(file.name,'utf8','hex')
+	  				var crypted = cipher.update(params.roomID,'utf8','hex')
 	  				crypted += cipher.final('hex');
 
-					var fs = require('fs')
-					  , ursa = require('ursa')
-					  , crt
-					  , key
-					  , msg
-					  ;
-
-					var keySizeBits = 1024;
-					var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
-					//var pem =ursa.toPublicPem(keyPair,"sha256");
-					var pubPem = keyPair.toPublicPem('base64');
-					console.log('privPem:', pubPem);
-
-					crt = ursa.createPublicKey(pubPem,'base64')
 					
 					console.log('Encrypt with Public');
 
-					var msg1 = crt.encrypt(params.roomID, 'base64', 'base64');
-
+					var msg1 = crt.encrypt(params.roomID, 'utf8', 'base64');
+					console.log(msg1);
 					console.log('############################################');
 					console.log('Reverse Public -> Private, Private -> Public');
 					console.log('############################################\n');
@@ -336,17 +394,13 @@ io.sockets.on("connection", function (socket) {
 
 					var keyShare = crt.toString('utf8');
 
-					var fs = require('fs');
-					var filePath= dir+'/'+'file.key.pem';
+					var encrypted = encrypt(params.roomID, keySizeBits/8, keyPair);
+					//console.log(encrypted);
 
-					fs.writeFile(filePath, msg1, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});
 					
-					var filePath= dir+'/'+'file.pub';
-					fs.writeFile(filePath, msg, function(err) {
+			
+					var filePath= dir+'/'+'file.key.pem';
+					fs.writeFile(filePath, crypted, function(err) {
 					    if(err) {
 					        return console.log(err);
 					    }    
@@ -377,25 +431,44 @@ io.sockets.on("connection", function (socket) {
 						    console.log("The file was saved!");
 						});
 					}
+
+					var cipher = crypto.createCipher(algorithm,password)
+  					var crypted = Buffer.concat([cipher.update(file.buffer),cipher.final()]);
 			    	
+					var filePath= dir+'/'+'file.pub';
+
+					fs.writeFile(filePath, crypted, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }    
+					});
+
 			    	console.log('File saved.');
 			    	socket.emit("update_private_msg", "fileexeptions*"+params.roomID);
 			  	};
 			});	
 		} 
 		else if(params.type==2){
-			var fs = require('fs')
-					  , ursa = require('ursa')
-					  , crt
-					  , key
-					  , msg
-					  ;
-			key= publicDecrypt(file.buffer, "base64", "base64");
-			if(ursa.isKey(key)){
-				console.log("OK");
-			}else{
-				console.log("NO");
-			}
+			var StringDecoder = require('string_decoder').StringDecoder;
+
+			var decoder = new StringDecoder('utf8');
+	 
+			var textChunk = decoder.write(file.buffer);
+			console.log(textChunk);
+			//var decrypted = decrypt(textChunk, keySizeBits/8, keyPair);
+			var decrypted = keyPair.decrypt(textChunk, 'base64', 'base64', ursa.RSA_NO_PADDING);
+			console.log(decrypted);
+
+			var crypto = require('crypto'),
+	    			algorithm = 'aes-256-ctr',
+	    			password = 'd6F3Efeq';
+
+			var decipher = crypto.createDecipher(algorithm,password)
+			var dec = decipher.update(textChunk,'hex','utf8')
+			dec += decipher.final('utf8');
+
+			console.log(dec);
+
 		}else{
 			console.log("Hello 3");
 		}

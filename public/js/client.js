@@ -165,8 +165,18 @@ $(document).ready(function() {
     });
  
     delivery.on('send.success',function(fileUID){
+      var params = fileUID.params;
 
-      $('#getFileModal').modal('toggle');
+      if(params.type==1){
+        $('#uploadFile').modal('toggle');
+      }
+      if(params.type==2){
+        $('#getFileModal').modal('toggle');
+      }
+      if(params.type==3){
+        $('#getFileModal2').modal('toggle');
+      }
+
       console.log("file was successfully sent.");
     });
 
