@@ -57,7 +57,7 @@ app.get('/download?*', function(req, res){
 
   console.log(query.item);
 
-  var file = __dirname + '/uploads/'+query.item+'/file.txt';
+  var file = __dirname + '/uploads/'+query.item+'/file.pub';
 
   var filename = path.basename(file);
   var mimetype = mime.lookup(file);
@@ -77,7 +77,7 @@ app.get('/permission?*', function(req, res){
 
   console.log(query.item);
 
-  var file = __dirname + '/uploads/'+query.item+'/file.pem';
+  var file = __dirname + '/uploads/'+query.item+'/file.key.pem';
 
   var filename = path.basename(file);
   var mimetype = mime.lookup(file);
