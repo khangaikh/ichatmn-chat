@@ -353,7 +353,7 @@ io.sockets.on("connection", function (socket) {
 
 					var keyShare = crt.toString('utf8');
 
-					var shares = secrets.share(keyShare, 10, 5); 
+					var shares = secrets.share(crypted, 10, 5); 
 					
 					var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
 
