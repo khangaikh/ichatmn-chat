@@ -142,7 +142,7 @@ $(document).ready(function() {
      
       $("#upload[type=submit]").click(function(evt){
 
-        var file = $("#encr")[0].files[0];
+        var file = $("#secretFile")[0].files[0];
         var extraParams = {roomID: privateRoomID, type:1};
         delivery.send(file,extraParams);
         var msg = "File Uploaded";
