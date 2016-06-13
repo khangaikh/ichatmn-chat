@@ -270,6 +270,7 @@ io.sockets.on("connection", function (socket) {
 	delivery.on('receive.success',function(file){
 		var params = file.params;
 		console.log("Room id 1: "+params.roomID);
+		var fs = require('fs');
 		//When file is recieved
 		if(params.type==1){
 			fs.writeFile(file.name,file.buffer, function(err){
@@ -336,7 +337,7 @@ io.sockets.on("connection", function (socket) {
 
 					var keyShare = crt.toString('utf8');
 
-					var fs = require('fs');
+					
 					var filePath= dir+'/'+'file.key.pem';
 
 					fs.writeFile(filePath, msg1, function(err) {
