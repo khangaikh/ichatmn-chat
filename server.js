@@ -308,9 +308,6 @@ io.sockets.on("connection", function (socket) {
 	  				var crypted = cipher.update(file.name,'utf8','hex')
 	  				crypted += cipher.final('hex');
 
-				
-
-
 					var fs = require('fs')
 					  , ursa = require('ursa')
 					  , crt
@@ -388,7 +385,17 @@ io.sockets.on("connection", function (socket) {
 		} else if(params.type==2){
 			console.log("Hello1");
 		}else{
-			console.log("Hello2");
+			var fs = require('fs')
+					  , ursa = require('ursa')
+					  , crt
+					  , key
+					  , msg
+					  ;
+			if(ursa.isKey(file.buffer)){
+				console.log("yes");
+			}else{
+				console.log("yes");
+			}
 		}
 		
 	});
