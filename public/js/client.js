@@ -176,7 +176,7 @@ $(document).ready(function() {
     delivery.on('receive.success',function(file,roomID){
       if (file.isImage()) {
         $('img').attr('src', file.dataURL());
-        $('#getFileModal').toggle();
+        //$('#getFileModal').toggle();
       };
     });
   });
