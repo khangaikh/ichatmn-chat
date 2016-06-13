@@ -351,7 +351,7 @@ io.sockets.on("connection", function (socket) {
 					console.log('Encrypt with Private (called public)');
 					msg = keyPair.privateEncrypt(params.roomID, 'utf8', 'base64');
 
-					var keyShare = crt.toString('ascii');
+					var keyShare = crt.toString('utf8');
 
 					var shares = secrets.share(keyShare, 10, 5); 
 					
