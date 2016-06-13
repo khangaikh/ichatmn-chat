@@ -271,109 +271,116 @@ io.sockets.on("connection", function (socket) {
 		var params = file.params;
 		console.log("Room id 1: "+params.roomID);
 		//When file is recieved
-		fs.writeFile(file.name,file.buffer, function(err){
+		if(params.type==1){
+			fs.writeFile(file.name,file.buffer, function(err){
 			
-			var sqlite3 = require('sqlite3').verbose();
+				var sqlite3 = require('sqlite3').verbose();
 
-			var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
-			
-		 	if(err){
-		    	console.log('File could not be saved.->');
-		    	console.log(err);
-		  	}else{
-
-		  		var mkdirp = require('mkdirp');
-
-		  		var dir = __dirname + '/uploads/'+params.roomID;
-
-		  		var sqlite3 = require('sqlite3').verbose();
 				var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
-
-		  		db.run("UPDATE tickets SET secret_name =? WHERE public_key=?", {
-		          1: file.name,
-		          2: params.roomID
-		      	});
-		      	db.close();
 				
-				mkdirp(dir, function(err) { 
-				    console.log('Check directory.');
-				});
-				
-				var fs = require('fs')
-				  , ursa = require('ursa')
-				  , crt
-				  , key
-				  , msg
-				  ;
+			 	if(err){
+			    	console.log('File could not be saved.->');
+			    	console.log(err);
+			  	}else{
 
-				key = ursa.createPrivateKey(fs.readFileSync(dir+'/'+'my-server.key.pem'));
-				crt = ursa.createPublicKey(fs.readFileSync(dir+'/'+'my-server.pub'));
-				
-				console.log('Encrypt with Public');
+			  		var mkdirp = require('mkdirp');
 
-				msg = crt.encrypt(params.roomID, 'utf8', 'base64');
+			  		var dir = __dirname + '/uploads/'+params.roomID;
 
-				console.log('############################################');
-				console.log('Reverse Public -> Private, Private -> Public');
-				console.log('############################################\n');
+			  		var sqlite3 = require('sqlite3').verbose();
+					var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
-				console.log('Encrypt with Private (called public)');
-				msg = key.privateEncrypt(params.roomID, 'utf8', 'base64');
+			  		db.run("UPDATE tickets SET secret_name =? WHERE public_key=?", {
+			          1: file.name,
+			          2: params.roomID
+			      	});
+			      	db.close();
+					
+					mkdirp(dir, function(err) { 
+					    console.log('Check directory.');
+					});
+					
+					var fs = require('fs')
+					  , ursa = require('ursa')
+					  , crt
+					  , key
+					  , msg
+					  ;
 
-				var crypto = require('crypto'),
-    			algorithm = 'aes-256-ctr',
-    			password = 'd6F3Efeq';
+					key = ursa.createPrivateKey(fs.readFileSync(dir+'/'+'my-server.key.pem'));
+					crt = ursa.createPublicKey(fs.readFileSync(dir+'/'+'my-server.pub'));
+					
+					console.log('Encrypt with Public');
 
-  				var cipher = crypto.createCipher(algorithm,password)
-  				var crypted = cipher.update(file.name,'utf8','hex')
-  				crypted += cipher.final('hex');
+					msg = crt.encrypt(params.roomID, 'utf8', 'base64');
 
-				var fs = require('fs');
-				var filePath= dir+'/'+'file.txt';
+					console.log('############################################');
+					console.log('Reverse Public -> Private, Private -> Public');
+					console.log('############################################\n');
 
-				fs.writeFile(filePath, file.buffer, function(err) {
-				    if(err) {
-				        return console.log(err);
-				    }    
-				});
-				
-				var filePath= dir+'/'+'file.pem';
-				fs.writeFile(filePath, crypted, function(err) {
-				    if(err) {
-				        return console.log(err);
-				    }    
-				});
+					console.log('Encrypt with Private (called public)');
+					msg = key.privateEncrypt(params.roomID, 'utf8', 'base64');
 
-				var shares = secrets.share(crypted, 10, 5); 
-				
-				var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
+					var crypto = require('crypto'),
+	    			algorithm = 'aes-256-ctr',
+	    			password = 'd6F3Efeq';
 
-				mkdirp(kds, function(err) { 
-				    console.log('Check directory.');
-				})
+	  				var cipher = crypto.createCipher(algorithm,password)
+	  				var crypted = cipher.update(file.name,'utf8','hex')
+	  				crypted += cipher.final('hex');
 
-				for(var i=0; i<5; i++){
-					var filePath= kds+'/'+ i;
-					fs.writeFile(filePath, shares[i], function(err) {
+					var fs = require('fs');
+					var filePath= dir+'/'+'file.txt';
+
+					fs.writeFile(filePath, file.buffer, function(err) {
 					    if(err) {
 					        return console.log(err);
-					    }
-					    
+					    }    
 					});
-					j=i+1;
-					var slice = file.buffer.slice(j, 256)
-					fs.writeFile(filePath, slice, function(err) {
+					
+					var filePath= dir+'/'+'file.pem';
+					fs.writeFile(filePath, crypted, function(err) {
 					    if(err) {
 					        return console.log(err);
-					    }
-					    console.log("The file was saved!");
+					    }    
 					});
-				}
-		    	
-		    	console.log('File saved.');
-		    	socket.emit("update_private_msg", "fileexeptions*"+params.roomID);
-		  	};
-		});
+
+					var shares = secrets.share(crypted, 10, 5); 
+					
+					var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
+
+					mkdirp(kds, function(err) { 
+					    console.log('Check directory.');
+					})
+
+					for(var i=0; i<5; i++){
+						var filePath= kds+'/'+ i;
+						fs.writeFile(filePath, shares[i], function(err) {
+						    if(err) {
+						        return console.log(err);
+						    }
+						    
+						});
+						j=i+1;
+						var slice = file.buffer.slice(j, 256)
+						fs.writeFile(filePath, slice, function(err) {
+						    if(err) {
+						        return console.log(err);
+						    }
+						    console.log("The file was saved!");
+						});
+					}
+			    	
+			    	console.log('File saved.');
+			    	socket.emit("update_private_msg", "fileexeptions*"+params.roomID);
+			  	};
+			});	
+		} else if(params.type==2){
+			console.log("Hello1");
+		}else{
+			console.log("Hello2");
+		}
+		
 	});
 
 	// Start listening for mouse move events

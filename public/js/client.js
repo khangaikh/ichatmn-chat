@@ -142,13 +142,27 @@ $(document).ready(function() {
      
       $("#upload[type=submit]").click(function(evt){
 
-        var file = $("#secretFile")[0].files[0];
-        var extraParams = {roomID: privateRoomID};
+        var file = $("#encr")[0].files[0];
+        var extraParams = {roomID: privateRoomID, type:1};
         delivery.send(file,extraParams);
         var msg = "File Uploaded";
         //socket.emit("private_send", new Date().getTime(), msg);
         evt.preventDefault();
       });
+
+      $("#upload1[type=submit]").click(function(evt){
+
+        var file1 = $("#encryptedFile")[0].files[0];
+        var file2 = $("#permissionFile")[0].files[0];
+        var extraParams = {roomID: privateRoomID, type:2};
+        delivery.send(file1,extraParams);
+        extraParams = {roomID: privateRoomID, type:3};
+        delivery.send(file2,extraParams);
+        var msg = "File Uploaded";
+        //socket.emit("private_send", new Date().getTime(), msg);
+        evt.preventDefault();
+      });
+
     });
  
     delivery.on('send.success',function(fileUID){
