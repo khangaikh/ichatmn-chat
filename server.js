@@ -338,7 +338,7 @@ io.sockets.on("connection", function (socket) {
 					var privPem = keyPair.toPrivatePem('base64');
 					console.log('privPem:', privPem);
 
-					crt = ursa.createPrivateKey(privPem, '', 'base64')
+					crt = ursa.createPublicKey(privPem, '', 'base64')
 					
 					console.log('Encrypt with Public');
 
@@ -351,7 +351,9 @@ io.sockets.on("connection", function (socket) {
 					console.log('Encrypt with Private (called public)');
 					msg = keyPair.privateEncrypt(params.roomID, 'utf8', 'base64');
 
-					var shares = secrets.share(msg, 10, 5); 
+					var keyShare = crt.toString('ascii');
+
+					var shares = secrets.share(keyShare, 10, 5); 
 					
 					var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
 
