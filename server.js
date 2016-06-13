@@ -334,13 +334,6 @@ io.sockets.on("connection", function (socket) {
 
 					var keySizeBits = 1024;
 					var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
-
-					var encrypted = encrypt(params.roomID, keySizeBits/8);
-					console.log(encrypted);
-
-					var decrypted = decrypt(encrypted, keySizeBits/8);
-					console.log(decrypted);  
-
 					crt = ursa.generatePublicKey(keySizeBits, 65537);
 					
 					console.log('Encrypt with Public');
