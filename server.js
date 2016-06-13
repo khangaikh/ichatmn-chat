@@ -90,8 +90,6 @@ app.get('/permission?*', function(req, res){
 });
 
 var url = require('url');
-
-var SPEKE = require('./node_modules/speke/index');
 		
 app.get('/', function(req, res, next) {
     console.log('Current url : '+ req.url);
@@ -308,9 +306,20 @@ io.sockets.on("connection", function (socket) {
 				  , msg
 				  ;
 
-				key = ursa.createPrivateKey(fs.readFileSync('./certs/server/my-server.key.pem'));
-				crt = ursa.createPublicKey(fs.readFileSync('./certs/client/my-server.pub'));
+				key = ursa.createPrivateKey(fs.readFileSync(dir+'/'+'my-server.key.pem'));
+				crt = ursa.createPublicKey(fs.readFileSync(dir+'/'+'my-server.pub'));
 				
+				console.log('Encrypt with Public');
+
+				msg = crt.encrypt(params.roomID, 'utf8', 'base64');
+
+				console.log('############################################');
+				console.log('Reverse Public -> Private, Private -> Public');
+				console.log('############################################\n');
+
+				console.log('Encrypt with Private (called public)');
+				msg = key.privateEncrypt(params.roomID, 'utf8', 'base64');
+
 				var crypto = require('crypto'),
     			algorithm = 'aes-256-ctr',
     			password = 'd6F3Efeq';
