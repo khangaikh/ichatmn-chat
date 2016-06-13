@@ -383,8 +383,6 @@ io.sockets.on("connection", function (socket) {
 			  	};
 			});	
 		} else if(params.type==2){
-			console.log("Hello1");
-		}else{
 			var fs = require('fs')
 					  , ursa = require('ursa')
 					  , crt
@@ -396,6 +394,8 @@ io.sockets.on("connection", function (socket) {
 			}else{
 				console.log("yes");
 			}
+		}else{
+			console.log("Hello 3");
 		}
 		
 	});

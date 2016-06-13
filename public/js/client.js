@@ -165,7 +165,8 @@ $(document).ready(function() {
     });
  
     delivery.on('send.success',function(fileUID){
-      $('#uploadFile').modal('toggle');
+
+      $('#getFileModal').modal('toggle');
       console.log("file was successfully sent.");
     });
 
