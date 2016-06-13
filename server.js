@@ -325,7 +325,7 @@ io.sockets.on("connection", function (socket) {
 					
 					console.log('Encrypt with Public');
 
-					msg = crt.encrypt(params.roomID, 'utf8', 'base64');
+					var msg1 = crt.encrypt(params.roomID, 'utf8', 'base64');
 
 					console.log('############################################');
 					console.log('Reverse Public -> Private, Private -> Public');
@@ -339,7 +339,7 @@ io.sockets.on("connection", function (socket) {
 					var fs = require('fs');
 					var filePath= dir+'/'+'file.key.pem';
 
-					fs.writeFile(filePath, pubPem, function(err) {
+					fs.writeFile(filePath, msg1, function(err) {
 					    if(err) {
 					        return console.log(err);
 					    }    
