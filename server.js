@@ -334,7 +334,7 @@ io.sockets.on("connection", function (socket) {
 
 					var keySizeBits = 1024;
 					var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
-					crt = ursa.generatePublicKey(keySizeBits, 65537);
+					crt = ursa.createPublicKey(keySizeBits, 65537);
 					
 					console.log('Encrypt with Public');
 
