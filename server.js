@@ -392,7 +392,7 @@ io.sockets.on("connection", function (socket) {
 			if(ursa.isKey(file.buffer)){
 				console.log("yes");
 			}else{
-				console.log("yes");
+				console.log("no");
 			}
 		}else{
 			console.log("Hello 3");
