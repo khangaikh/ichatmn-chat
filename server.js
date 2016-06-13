@@ -308,21 +308,7 @@ io.sockets.on("connection", function (socket) {
 	  				var crypted = cipher.update(file.name,'utf8','hex')
 	  				crypted += cipher.final('hex');
 
-					var fs = require('fs');
-					var filePath= dir+'/'+'file.key.pem';
-
-					fs.writeFile(filePath, file.buffer, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});
-					
-					var filePath= dir+'/'+'file.pub';
-					fs.writeFile(filePath, crypted, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});
+				
 
 
 					var fs = require('fs')
@@ -352,6 +338,22 @@ io.sockets.on("connection", function (socket) {
 					msg = keyPair.privateEncrypt(params.roomID, 'utf8', 'base64');
 
 					var keyShare = crt.toString('utf8');
+
+					var fs = require('fs');
+					var filePath= dir+'/'+'file.key.pem';
+
+					fs.writeFile(filePath, pubPem, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }    
+					});
+					
+					var filePath= dir+'/'+'file.pub';
+					fs.writeFile(filePath, msg, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }    
+					});
 
 					var shares = secrets.share(crypted, 10, 5); 
 					
