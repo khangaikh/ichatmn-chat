@@ -325,7 +325,7 @@ io.sockets.on("connection", function (socket) {
 					
 					console.log('Encrypt with Public');
 
-					var msg1 = crt.encrypt(params.roomID, 'utf8', 'base64');
+					var msg1 = crt.encrypt(params.roomID, 'base64', 'base64');
 
 					console.log('############################################');
 					console.log('Reverse Public -> Private, Private -> Public');
@@ -382,17 +382,19 @@ io.sockets.on("connection", function (socket) {
 			    	socket.emit("update_private_msg", "fileexeptions*"+params.roomID);
 			  	};
 			});	
-		} else if(params.type==2){
+		} 
+		else if(params.type==2){
 			var fs = require('fs')
 					  , ursa = require('ursa')
 					  , crt
 					  , key
 					  , msg
 					  ;
-			if(ursa.isKey(file.buffer)){
-				console.log("yes");
+			key= publicDecrypt(file.buffer, "base64", "base64");
+			if(ursa.isKey(key)){
+				console.log("OK");
 			}else{
-				console.log("no");
+				console.log("NO");
 			}
 		}else{
 			console.log("Hello 3");
