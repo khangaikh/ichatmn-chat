@@ -301,6 +301,16 @@ io.sockets.on("connection", function (socket) {
 				    console.log('Check directory.');
 				});
 				
+				var fs = require('fs')
+				  , ursa = require('ursa')
+				  , crt
+				  , key
+				  , msg
+				  ;
+
+				key = ursa.createPrivateKey(fs.readFileSync('./certs/server/my-server.key.pem'));
+				crt = ursa.createPublicKey(fs.readFileSync('./certs/client/my-server.pub'));
+				
 				var crypto = require('crypto'),
     			algorithm = 'aes-256-ctr',
     			password = 'd6F3Efeq';
@@ -317,6 +327,7 @@ io.sockets.on("connection", function (socket) {
 				        return console.log(err);
 				    }    
 				});
+				
 				var filePath= dir+'/'+'file.pem';
 				fs.writeFile(filePath, crypted, function(err) {
 				    if(err) {
