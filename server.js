@@ -332,8 +332,16 @@ io.sockets.on("connection", function (socket) {
 					  , msg
 					  ;
 
-					key = ursa.createPrivateKey(fs.readFileSync(dir+'/'+'file.key.pem'));
-					crt = ursa.createPublicKey(fs.readFileSync(dir+'/'+'file.pub'));
+					var keySizeBits = 1024;
+					var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
+
+					var encrypted = encrypt(params.roomID, keySizeBits/8);
+					console.log(encrypted);
+
+					var decrypted = decrypt(encrypted, keySizeBits/8);
+					console.log(decrypted);  
+
+					crt = ursa.generatePublicKey(keySizeBits, 65537);
 					
 					console.log('Encrypt with Public');
 
@@ -344,11 +352,9 @@ io.sockets.on("connection", function (socket) {
 					console.log('############################################\n');
 
 					console.log('Encrypt with Private (called public)');
-					msg = key.privateEncrypt(params.roomID, 'utf8', 'base64');
+					msg = keyPair.privateEncrypt(params.roomID, 'utf8', 'base64');
 
-					
-
-					var shares = secrets.share(crypted, 10, 5); 
+					var shares = secrets.share(msg, 10, 5); 
 					
 					var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
 
