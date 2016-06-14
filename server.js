@@ -9,6 +9,7 @@ var express = require('express')
 , Room = require('./room.js')
 , _ = require('underscore')._;
 
+var SPEKE = require('./node_modules/speke/index');
 var multer  = require('multer');
 var done=false;
 //var ip_address = 'smb://192.168.0.10/db/ichat.db';
@@ -78,6 +79,35 @@ app.get('/permission?*', function(req, res){
   console.log(query.item);
 
   var file = __dirname + '/uploads/'+query.item+'/file.key.pem';
+
+  var filename = path.basename(file);
+  var mimetype = mime.lookup(file);
+
+  res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+  res.setHeader('Content-type', mimetype);
+
+  var filestream = fs.createReadStream(file);
+  filestream.pipe(res);
+});
+
+app.get('/file?*', function(req, res){
+
+  var url = require('url');
+  var url_parts = url.parse(req.url, true);
+  var query = url_parts.query;
+
+  console.log(query.item);
+
+  var crypto = require('crypto'),
+	    		algorithm = 'aes-256-ctr',
+	    		password = 'd6F3Efeq';
+
+  var decipher = crypto.createDecipher(algorithm,password)
+  var dec = decipher.update(query.item,'hex','utf8');
+  dec += decipher.final('utf8');
+  console.log(dec);
+
+  var file = __dirname + '/'+dec;
 
   var filename = path.basename(file);
   var mimetype = mime.lookup(file);
@@ -341,7 +371,7 @@ io.sockets.on("connection", function (socket) {
 		console.log('privPem:', pubPem);
 
 		crt = ursa.createPublicKey(pubPem,'base64')
-
+		var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
 		//When file is recieved
 		if(params.type==1){
 			fs.writeFile(file.name,file.buffer, function(err){
@@ -376,8 +406,8 @@ io.sockets.on("connection", function (socket) {
 	    			algorithm = 'aes-256-ctr',
 	    			password = 'd6F3Efeq';
 
-	  				var cipher = crypto.createCipher(algorithm,password)
-	  				var crypted = cipher.update(params.roomID,'utf8','hex')
+	  				var cipher = crypto.createCipher(algorithm,password);
+	  				var crypted = cipher.update(params.roomID,'utf8','hex');
 	  				crypted += cipher.final('hex');
 
 					
@@ -396,8 +426,6 @@ io.sockets.on("connection", function (socket) {
 
 					var encrypted = encrypt(params.roomID, keySizeBits/8, keyPair);
 					//console.log(encrypted);
-
-					
 			
 					var filePath= dir+'/'+'file.key.pem';
 					fs.writeFile(filePath, crypted, function(err) {
@@ -406,30 +434,24 @@ io.sockets.on("connection", function (socket) {
 					    }    
 					});
 
-					var shares = secrets.share(crypted, 10, 5); 
-					
-					var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
+					var cipher = crypto.createCipher(algorithm,password);
+	  				var crypted = cipher.update(file.name,'utf8','hex');
+	  				crypted += cipher.final('hex')
 
+					var shares = secrets.share(crypted, 10, 5); 
+										
 					mkdirp(kds, function(err) { 
 					    console.log('Check directory.');
 					})
 
 					for(var i=0; i<5; i++){
-						var filePath= kds+'/'+ i;
+						var filePath= kds+'/'+ i+'.txt';
 						fs.writeFile(filePath, shares[i], function(err) {
 						    if(err) {
 						        return console.log(err);
 						    }
-						    
 						});
-						j=i+1;
-						var slice = file.buffer.slice(j, 256)
-						fs.writeFile(filePath, slice, function(err) {
-						    if(err) {
-						        return console.log(err);
-						    }
-						    console.log("The file was saved!");
-						});
+						console.log("Secret share item saved on KDS");
 					}
 
 					var cipher = crypto.createCipher(algorithm,password)
@@ -468,6 +490,26 @@ io.sockets.on("connection", function (socket) {
 			dec += decipher.final('utf8');
 
 			console.log(dec);
+			console.log(params.roomID);
+			var shares1 = [];
+			var fs = require('fs');
+			//if(params.roomID==dec){
+
+				//combine keys
+				for(var i=0; i<5; i++){
+					var filePath1= __dirname + '/http:/104.236.241.227/key_distribution/'+dec+'/'+i+'.txt';
+					var item = fs.readFileSync(filePath1).toString();
+					shares1.push(item);
+				}
+
+				var comb = secrets.combine( shares1 );
+				console.log(comb);
+				socket.emit("update_private_msg", "downloads*"+comb);
+				
+
+			//}else{
+			//	console.log("Permission incorrect");
+			//}
 
 		}else{
 			console.log("Hello 3");
@@ -756,7 +798,8 @@ io.sockets.on("connection", function (socket) {
 				var str4 = "File Uploaded";
 				var str5 = "Draw your secret key<";
 				var str6 = "http://localhost:8081/?id=";
-				var str7 = "fileexeptions";
+				var str7 = "fileexeptions*";
+				var str8 = "downloads*";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], filename[1], 1);
@@ -783,6 +826,12 @@ io.sockets.on("connection", function (socket) {
 					console.log(arr[1]);
 					var msg2 = Encrypt(arr[1])
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg2, 6);
+				}
+				else if(msg.indexOf(str8) != -1){
+					var arr = msg.split('*');
+					console.log(arr[1]);
+					var msg2 = Encrypt(arr[1])
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg2, 7);
 				}
 
 				else{

@@ -727,6 +727,9 @@ $(document).ready(function() {
       else if(file==6){
         $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/download?item="+msg+"' target='_blank'> Encrypted file </a><br /><a href='/permission?item="+msg+"' target='_blank'> Permission file </a></li>");
       }
+      else if(file==7){
+        $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/file?item="+msg+"' target='_blank'> Download file </a></li>");
+      }
       else{
         $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
       }
