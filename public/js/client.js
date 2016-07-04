@@ -80,6 +80,17 @@ function timeFormat(msTime) {
     zeroPad(d.getSeconds(), 2) + " ";
 }
 
+function makeid()
+{
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 5; i++ )
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
 // Format the time specified in ms from 1970 into local HH:MM:SS
 function hello(caller) {
   var d = new Date(msTime);
@@ -128,7 +139,7 @@ $(document).ready(function() {
   //setup "global" variables first
   var socket = io.connect("127.0.0.1:8080");
   var myRoomID = null;
-  var privateRoomID = null;
+  var privateRoomID =  makeid();
   var curUser = null;
   $("#private_actions").hide();
   $("#private_conversation").hide();
@@ -165,8 +176,18 @@ $(document).ready(function() {
     });
  
     delivery.on('send.success',function(fileUID){
+      var params = fileUID.params;
 
-      $('#getFileModal').modal('toggle');
+      if(params.type==1){
+        $('#uploadFile').modal('toggle');
+      }
+      if(params.type==2){
+        $('#getFileModal').modal('toggle');
+      }
+      if(params.type==3){
+        $('#getFileModal2').modal('toggle');
+      }
+
       console.log("file was successfully sent.");
     });
 
@@ -716,6 +737,9 @@ $(document).ready(function() {
       }
       else if(file==6){
         $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/download?item="+msg+"' target='_blank'> Encrypted file </a><br /><a href='/permission?item="+msg+"' target='_blank'> Permission file </a></li>");
+      }
+      else if(file==7){
+        $("#private_msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/file?item="+msg+"' target='_blank'> Download file </a></li>");
       }
       else{
         $("#private_msgs").append("<li>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");

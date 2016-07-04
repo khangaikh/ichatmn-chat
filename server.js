@@ -9,6 +9,7 @@ var express = require('express')
 , Room = require('./room.js')
 , _ = require('underscore')._;
 
+//var SPEKE = require('./node_modules/speke/index');
 var multer  = require('multer');
 var done=false;
 //var ip_address = 'smb://192.168.0.10/db/ichat.db';
@@ -89,6 +90,35 @@ app.get('/permission?*', function(req, res){
   filestream.pipe(res);
 });
 
+app.get('/file?*', function(req, res){
+
+  var url = require('url');
+  var url_parts = url.parse(req.url, true);
+  var query = url_parts.query;
+
+  console.log(query.item);
+
+  var crypto = require('crypto'),
+	    		algorithm = 'aes-256-ctr',
+	    		password = 'd6F3Efeq';
+
+  var decipher = crypto.createDecipher(algorithm,password)
+  var dec = decipher.update(query.item,'hex','utf8');
+  dec += decipher.final('utf8');
+  console.log(dec);
+
+  var file = __dirname + '/'+dec;
+
+  var filename = path.basename(file);
+  var mimetype = mime.lookup(file);
+
+  res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+  res.setHeader('Content-type', mimetype);
+
+  var filestream = fs.createReadStream(file);
+  filestream.pipe(res);
+});
+
 var url = require('url');
 		
 app.get('/', function(req, res, next) {
@@ -141,6 +171,58 @@ function Encrypt(str) {
       };
       return ostr;
   } catch (ex) { return '' }
+}
+
+
+function encrypt(clearText, keySizeBytes, keyPair){
+    var buffer = new Buffer(clearText);
+    var maxBufferSize = keySizeBytes - 42; //according to ursa documentation
+    var bytesDecrypted = 0;
+    var encryptedBuffersList = [];
+
+    //loops through all data buffer encrypting piece by piece
+    while(bytesDecrypted < buffer.length){
+        //calculates next maximun length for temporary buffer and creates it
+        var amountToCopy = Math.min(maxBufferSize, buffer.length - bytesDecrypted);
+        var tempBuffer = new Buffer(amountToCopy);
+
+        //copies next chunk of data to the temporary buffer
+        buffer.copy(tempBuffer, 0, bytesDecrypted, bytesDecrypted + amountToCopy);
+
+        //encrypts and stores current chunk
+        var encryptedBuffer = keyPair.encrypt(tempBuffer);
+        encryptedBuffersList.push(encryptedBuffer);
+
+        bytesDecrypted += amountToCopy;
+    }
+
+    //concatenates all encrypted buffers and returns the corresponding String
+    return Buffer.concat(encryptedBuffersList).toString('base64');
+}
+
+function decrypt(encryptedString, keySizeBytes,keyPair){
+
+    var encryptedBuffer = new Buffer(encryptedString, 'base64');
+    var decryptedBuffers = [];
+    var ursa = require("ursa");
+    //if the clear text was encrypted with a key of size N, the encrypted 
+    //result is a string formed by the concatenation of strings of N bytes long, 
+    //so we can find out how many substrings there are by diving the final result
+    //size per N
+    var totalBuffers = encryptedBuffer.length / keySizeBytes;
+
+    //decrypts each buffer and stores result buffer in an array
+    for(var i = 0 ; i < totalBuffers; i++){
+        //copies next buffer chunk to be decrypted in a temp buffer
+        var tempBuffer = new Buffer(keySizeBytes);
+        encryptedBuffer.copy(tempBuffer, 0, i*keySizeBytes, (i+1)*keySizeBytes);
+        //decrypts and stores current chunk
+        var decryptedBuffer = keyPair.decrypt(tempBuffer,'base64','base64',ursa.RSA_NO_PADDING);
+        decryptedBuffers.push(decryptedBuffer);
+    }
+
+    //concatenates all decrypted buffers and returns the corresponding String
+    return Buffer.concat(decryptedBuffers).toString();
 }
 
 function purge(s, action, chat_id) {
@@ -271,6 +353,25 @@ io.sockets.on("connection", function (socket) {
 		var params = file.params;
 		console.log("Room id 1: "+params.roomID);
 		var fs = require('fs');
+
+		var ursa = require("ursa");
+
+		var keySizeBits = 1024;
+		var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
+
+		var crt
+		  , key
+		  , msg
+		  ;
+
+		//var keySizeBits = 1024;
+		//var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
+		//var pem =ursa.toPublicPem(keyPair,"sha256");
+		var pubPem = keyPair.toPublicPem('base64');
+		console.log('privPem:', pubPem);
+
+		crt = ursa.createPublicKey(pubPem,'base64')
+		var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
 		//When file is recieved
 		if(params.type==1){
 			fs.writeFile(file.name,file.buffer, function(err){
@@ -305,98 +406,112 @@ io.sockets.on("connection", function (socket) {
 	    			algorithm = 'aes-256-ctr',
 	    			password = 'd6F3Efeq';
 
-	  				var cipher = crypto.createCipher(algorithm,password)
-	  				var crypted = cipher.update(file.name,'utf8','hex')
+	  				var cipher = crypto.createCipher(algorithm,password);
+	  				var crypted = cipher.update(params.roomID,'utf8','hex');
 	  				crypted += cipher.final('hex');
 
-					var fs = require('fs')
-					  , ursa = require('ursa')
-					  , crt
-					  , key
-					  , msg
-					  ;
-
-					var keySizeBits = 1024;
-					var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
-					//var pem =ursa.toPublicPem(keyPair,"sha256");
-					var pubPem = keyPair.toPublicPem('base64');
-					console.log('privPem:', pubPem);
-
-					crt = ursa.createPublicKey(pubPem,'base64')
 					
 					console.log('Encrypt with Public');
 
-					var msg1 = crt.encrypt(params.roomID, 'base64', 'base64');
-
+					var msg1 = crt.encrypt(file.name, 'utf8', 'base64');
+					console.log(msg1);
 					console.log('############################################');
 					console.log('Reverse Public -> Private, Private -> Public');
 					console.log('############################################\n');
 
 					console.log('Encrypt with Private (called public)');
-					msg = keyPair.privateEncrypt(params.roomID, 'utf8', 'base64');
+					msg = keyPair.privateEncrypt(file.name, 'utf8', 'base64');
 
 					var keyShare = crt.toString('utf8');
 
-					
-					var filePath= dir+'/'+'file.key.pem';
+					var encrypted = encrypt(file.name, keySizeBits/8, keyPair);
+					//console.log(encrypted);
+			
 
-					fs.writeFile(filePath, msg1, function(err) {
+					var filePath= dir+'/'+'file.key.pem';
+					fs.writeFile(filePath, crypted, function(err) {
 					    if(err) {
 					        return console.log(err);
 					    }    
 					});
-					
-					var filePath= dir+'/'+'file.pub';
-					fs.writeFile(filePath, msg, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});
+
+					var cipher = crypto.createCipher(algorithm,password);
+	  				var crypted = cipher.update(file.name,'utf8','hex');
+	  				crypted += cipher.final('hex')
 
 					var shares = secrets.share(crypted, 10, 5); 
-					
-					var kds = "http://104.236.241.227/key_distribution/"+params.roomID;
-
+										
 					mkdirp(kds, function(err) { 
 					    console.log('Check directory.');
 					})
 
 					for(var i=0; i<5; i++){
-						var filePath= kds+'/'+ i;
+						var filePath= kds+'/'+ i+'.txt';
 						fs.writeFile(filePath, shares[i], function(err) {
 						    if(err) {
 						        return console.log(err);
 						    }
-						    
 						});
-						j=i+1;
-						var slice = file.buffer.slice(j, 256)
-						fs.writeFile(filePath, slice, function(err) {
-						    if(err) {
-						        return console.log(err);
-						    }
-						    console.log("The file was saved!");
-						});
+						console.log("Secret share item saved on KDS");
 					}
+
+					var cipher = crypto.createCipher(algorithm,password)
+  					var crypted = Buffer.concat([cipher.update(file.buffer),cipher.final()]);
 			    	
+					var filePath= dir+'/'+'file.pub';
+
+					fs.writeFile(filePath, crypted, function(err) {
+					    if(err) {
+					        return console.log(err);
+					    }    
+					});
+
 			    	console.log('File saved.');
 			    	socket.emit("update_private_msg", "fileexeptions*"+params.roomID);
 			  	};
 			});	
 		} 
 		else if(params.type==2){
-			var fs = require('fs')
-					  , ursa = require('ursa')
-					  , crt
-					  , key
-					  , msg
-					  ;
-			key= publicDecrypt(file.buffer, "base64", "base64");
-			if(ursa.isKey(key)){
-				console.log("OK");
-			}else{
-				console.log("NO");
-			}
+			var StringDecoder = require('string_decoder').StringDecoder;
+
+			var decoder = new StringDecoder('utf8');
+	 
+			var textChunk = decoder.write(file.buffer);
+			console.log(textChunk);
+			//var decrypted = decrypt(textChunk, keySizeBits/8, keyPair);
+			var decrypted = keyPair.decrypt(textChunk, 'base64', 'base64', ursa.RSA_NO_PADDING);
+			console.log(decrypted);
+
+			var crypto = require('crypto'),
+	    			algorithm = 'aes-256-ctr',
+	    			password = 'd6F3Efeq';
+
+			var decipher = crypto.createDecipher(algorithm,password)
+			var dec = decipher.update(textChunk,'hex','utf8')
+			dec += decipher.final('utf8');
+
+			console.log(dec);
+			console.log(params.roomID);
+			var shares1 = [];
+			var fs = require('fs');
+			//if(params.roomID==dec){
+
+				//combine keys
+				for(var i=0; i<5; i++){
+					var filePath1= __dirname + '/http:/104.236.241.227/key_distribution/'+dec+'/'+i+'.txt';
+					var item = fs.readFileSync(filePath1).toString();
+					shares1.push(item);
+				}
+
+				var comb = secrets.combine( shares1 );
+				console.log(comb);
+				socket.emit("update_private_msg", "downloads*"+comb);
+				
+
+			//}else{
+			//	console.log("Permission incorrect");
+			//}
+
 		}else{
 			console.log("Hello 3");
 		}
@@ -605,17 +720,17 @@ io.sockets.on("connection", function (socket) {
 					var password = msg;
  
 					// Prepares an object for both Alice and Bob, with a prime value set. 
-					var alice = SPEKE.getSPEKE('modp5');
-					var bob = SPEKE.getSPEKE('modp5');
+					//var alice = SPEKE.getSPEKE('modp5');
+					//var bob = SPEKE.getSPEKE('modp5');
 					 
 					// Initialize the generator, based on the password, as well as create the 
 					// public and private keys. 
-					alice.generateKeys(password);
-					bob.generateKeys(password);
+					//alice.generateKeys(password);
+					//bob.generateKeys(password);
 					 
 					// Compute the shared secret, with Alice using Bob's public key, and Bob using 
 					// Alice's public key. 
-					var alice_secret = alice.computeSecret(bob.getPublicKey(), null, 'hex');
+					/*var alice_secret = alice.computeSecret(bob.getPublicKey(), null, 'hex');
 					var bob_secret = bob.computeSecret(alice.getPublicKey(), null, 'hex');
 					console.log("Msg in Deffie Hellman public key");
 					console.log(alice.getPublicKey());
@@ -623,9 +738,9 @@ io.sockets.on("connection", function (socket) {
 					console.log(alice_secret);
 					// We should now have the same shared secret. 
 					console.log(alice_secret.length);
-					if(alice_secret === bob_secret){
-						io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], msg,0);
-					}
+					if(alice_secret === bob_secret){*/
+					io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], msg,0);
+					//}
 				}
 				
 				socket.emit("isTyping", false);
@@ -684,7 +799,8 @@ io.sockets.on("connection", function (socket) {
 				var str4 = "File Uploaded";
 				var str5 = "Draw your secret key<";
 				var str6 = "http://localhost:8081/?id=";
-				var str7 = "fileexeptions";
+				var str7 = "fileexeptions*";
+				var str8 = "downloads*";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], filename[1], 1);
@@ -711,6 +827,12 @@ io.sockets.on("connection", function (socket) {
 					console.log(arr[1]);
 					var msg2 = Encrypt(arr[1])
 				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg2, 6);
+				}
+				else if(msg.indexOf(str8) != -1){
+					var arr = msg.split('*');
+					console.log(arr[1]);
+					var msg2 = Encrypt(arr[1])
+				    io.sockets.in(socket.room).emit("private_chat", msTime, people[socket.id], msg2, 7);
 				}
 
 				else{

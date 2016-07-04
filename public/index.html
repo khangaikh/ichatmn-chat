@@ -56,19 +56,19 @@
     <div class="row" id="main-header" style="display:none">
       <div class="col-md-4" id="no-show2"></div>
       <div class="col-md-4">
-        <h2>iChat.mn list tradings</h2>
-        <a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal" style="float:right">Create chat topic</a>
+        <h2>iChat.mn private chat</h2>
+       <!-- <a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal" style="float:right">Create chat topic</a>-->
       </div>
     </div>
 
     <div class="row" id="main-chat-screen">
-      <div class="col-md-4" id="no-show">
+      <div class="col-md-1">
       </div>
-      <div class="col-md-4">
-        <ul id="rooms" class="list-group"></ul>
-        <ul id="people" class="list-group" style="display:none"></ul>
+      <div class="col-md-3">
+        <ul id="rooms" class="list-group" style="display:none"></ul>
+        <ul id="people" class="list-group"></ul>
       </div>
-      <div class="col-md-6" style="display:none">
+      <div class="col-md-8" >
         <div id="conversation">
           <ul id="msgs" class="list-unstyled"></ul>
         </div>
@@ -80,12 +80,22 @@
          <!-- <input type="button" name="start_button" id="start_button" value="Record" onclick="startButton(event)" class="btn btn-info btn-lg"> -->
           <div class="btn-group">
             <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
+              Buyer actions <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="#" name="setUp" data-toggle="modal" data-target="#tradeModal">Set up</a></li>
+              <li><a href="#" name="setUp" data-toggle="modal" data-target="#paymentModal">Make Payment</a></li>
+              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">File</a></li>
+               <li><a href="#" name="setUp" data-toggle="modal" data-target="#getFileModal">Get File</a></li>
+              <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
+            </ul>
+           <!-- <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
               Action <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
               <li><a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal">Create private room</a></li>
               <li><a href="#" name="disconnect" id="disconnect">Disconnect from chat</a></li>
-            </ul>
+            </ul>-->
           </div>
         </form>
       </div>
@@ -354,9 +364,12 @@
         </div>
         <div class="modal-body">
           <form id ="uploadForm1" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
-            Upload your permission file:
+            Upload your key files:<br />
             <input type="file" class="form-control input-lg" name="userPhoto1" id="permissionFile"/>
-            <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload1"/>
+            <input type="file" class="form-control input-lg" name="userPhoto2" id="encryptedFile1"/>
+            <input type="file" class="form-control input-lg" name="userPhoto2" id="encryptedFile7"/>
+            <br />
+            <input type="submit" class="btn btn-lg btn-default" value="Upload Keys" id="upload1"/>
           </form>
         </div>
       </div>
@@ -372,8 +385,9 @@
         </div>
         <div class="modal-body">
           <form id ="uploadForm2" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
-            Encrypted file:
+            
             <input type="file" class="form-control input-lg" name="userPhoto1" id="encryptedFile"/>
+
             <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload2"/>
           </form>
         </div>
