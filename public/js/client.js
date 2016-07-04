@@ -165,12 +165,23 @@ $(document).ready(function() {
 
         //var file1 = $("#encryptedFile")[0].files[0];
         var file1 = $("#permissionFile")[0].files[0];
-        var extraParams = {roomID: privateRoomID, type:2};
-        delivery.send(file1,extraParams);
+        
+        var file2 = $("#encryptedFile1")[0].files[0];
+        var file3 = $("#encryptedFile7")[0].files[0];
+        var file4 = $("#encryptedFile8")[0].files[0];
+        if(file2 && file3 && file4){
+           var extraParams = {roomID: privateRoomID, type:2};
+          delivery.send(file1,extraParams);
 
-        var msg = "File Uploaded";
-        //socket.emit("private_send", new Date().getTime(), msg);
-        evt.preventDefault();
+
+
+          var msg = "File Uploaded";
+          //socket.emit("private_send", new Date().getTime(), msg);
+          evt.preventDefault();
+        }else{
+          alert("Please select key files");
+        }
+       
       });
 
     });
@@ -671,6 +682,12 @@ $(document).ready(function() {
  
     });
 
+    socket.on("update_msg", function(msg) {
+      
+       $("#msg").val(msg);
+ 
+    })
+
     socket.on("update-people", function(data){
       //var peopleOnline = [];
       $("#people").empty();
@@ -708,7 +725,10 @@ $(document).ready(function() {
     socket.on("chat", function(msTime, person, msg, file) {
       if(file==0){
         $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
-      }else{
+      }else if(file==7){
+        $("#msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/file?item="+msg+"' target='_blank'> Download file </a></li>");     
+      }
+      else{
         $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
       }
       

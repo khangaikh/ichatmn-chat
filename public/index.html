@@ -80,7 +80,7 @@
          <!-- <input type="button" name="start_button" id="start_button" value="Record" onclick="startButton(event)" class="btn btn-info btn-lg"> -->
           <div class="btn-group">
             <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
-              Buyer actions <span class="caret"></span>
+              Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
               <li><a href="#" name="setUp" data-toggle="modal" data-target="#tradeModal">Set up</a></li>
@@ -364,10 +364,12 @@
         </div>
         <div class="modal-body">
           <form id ="uploadForm1" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
+            Upload your pem file:<br />
+            <input type="file" class="form-control input-lg" name="userPhoto1" id="permissionFile" required /><br />
             Upload your key files:<br />
-            <input type="file" class="form-control input-lg" name="userPhoto1" id="permissionFile"/>
-            <input type="file" class="form-control input-lg" name="userPhoto2" id="encryptedFile1"/>
-            <input type="file" class="form-control input-lg" name="userPhoto2" id="encryptedFile7"/>
+            <input type="file" class="form-control input-lg" name="userPhoto2" id="encryptedFile1" required/>
+            <input type="file" class="form-control input-lg" name="userPhoto7" id="encryptedFile7" required/>
+            <input type="file" class="form-control input-lg" name="userPhoto8" id="encryptedFile8" required/>
             <br />
             <input type="submit" class="btn btn-lg btn-default" value="Upload Keys" id="upload1"/>
           </form>
