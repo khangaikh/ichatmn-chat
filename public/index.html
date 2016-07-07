@@ -364,14 +364,14 @@
         </div>
         <div class="modal-body">
           <form id ="uploadForm1" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
-            Upload your pem file:<br />
-            <input type="file" class="form-control input-lg" name="userPhoto1" id="permissionFile" required /><br />
-            Upload your key files:<br />
-            <input type="file" class="form-control input-lg" name="userPhoto2" id="encryptedFile1" required/>
-            <input type="file" class="form-control input-lg" name="userPhoto7" id="encryptedFile7" required/>
-            <input type="file" class="form-control input-lg" name="userPhoto8" id="encryptedFile8" required/>
+            Upload your encrypted file:<br />
+            <input type="file" class="form-control input-lg" name="userPhoto1" id="permissionFile" required /><br /><br />
+            Write your secret host IPs:<br />
+            <input type="text" class="form-control input-lg" name="userPhoto2" id="encryptedFile1" placeholder="IP1" required/><br />
+            <input type="text" class="form-control input-lg" name="userPhoto7" id="encryptedFile7" placeholder="IP2"  required/><br />
+            <input type="text" class="form-control input-lg" name="userPhoto8" id="encryptedFile8" placeholder="IP3 optional" /><br />
             <br />
-            <input type="submit" class="btn btn-lg btn-default" value="Upload Keys" id="upload1"/>
+            <input type="submit" class="btn btn-lg btn-default" value="Decrypt file" id="upload1"/>
           </form>
         </div>
       </div>

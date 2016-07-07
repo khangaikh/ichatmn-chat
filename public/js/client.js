@@ -7,6 +7,7 @@
 var final_transcript = '';
 var recognizing = false;
 var last10messages = []; //to be populated later
+var external_hosts = ['212.354.7.2', '104.463.255.1','45.23.54.89', '213.435.24.5','42.436.753.10'];
 
 if (!('webkitSpeechRecognition' in window)) {
   console.log("webkitSpeechRecognition is not available");
@@ -166,20 +167,20 @@ $(document).ready(function() {
         //var file1 = $("#encryptedFile")[0].files[0];
         var file1 = $("#permissionFile")[0].files[0];
         
-        var file2 = $("#encryptedFile1")[0].files[0];
-        var file3 = $("#encryptedFile7")[0].files[0];
-        var file4 = $("#encryptedFile8")[0].files[0];
-        if(file2 && file3 && file4){
-           var extraParams = {roomID: privateRoomID, type:2};
+        var ip_1 = $("#encryptedFile1").val();
+        var ip_2= $("#encryptedFile7").val();
+        var ip_3 = $("#encryptedFile8").val();
+
+        if(ip_1 && ip_2){
+
+          var extraParams = {roomID: privateRoomID, ip1:ip_1, ip2:ip_2, ip3:ip_3, type:2};
           delivery.send(file1,extraParams);
-
-
 
           var msg = "File Uploaded";
           //socket.emit("private_send", new Date().getTime(), msg);
           evt.preventDefault();
         }else{
-          alert("Please select key files");
+          alert("Please select secret IPS");
         }
        
       });
@@ -726,7 +727,14 @@ $(document).ready(function() {
       if(file==0){
         $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: " + msg + "</li>");
       }else if(file==7){
-        $("#msgs").append("<li>"+ timeFormat(msTime) + person.name +"<a href='/file?item="+msg+"' target='_blank'> Download file </a></li>");     
+        $("#msgs").append("<li> <strong><span class='text-success'>"+ timeFormat(msTime) + person.name +"</span></strong>: <a href='/file?item="+msg+"' target='_blank'> Download file </a></li>");     
+      }
+      else if(file==6){
+        var item1 = external_hosts[Math.floor(Math.random()*external_hosts.length)];
+        var item2 = external_hosts[Math.floor(Math.random()*external_hosts.length)];
+        var item3 = external_hosts[Math.floor(Math.random()*external_hosts.length)];
+
+        $("#msgs").append("<li> <strong><span class='text-success'>"+ timeFormat(msTime) + person.name +"</span></strong>: <a href='/download?item="+msg+"' target='_blank'> Encrypted file </a> IPS: "+item1+", "+item2+", "+item3+"</li>");
       }
       else{
         $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");

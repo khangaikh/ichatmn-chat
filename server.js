@@ -18,6 +18,8 @@ var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 var internal = 'localhost';
 var ip_run = "192.168.0.10"; //127.0.0.1
 
+var external_hosts = ['212.354.7.2', '104.463.255.1','45.23.54.89', '213.435.24.5','42.436.753.10'];
+
 app.configure(function() {
 	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
   	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
@@ -58,7 +60,7 @@ app.get('/download?*', function(req, res){
 
   console.log(query.item);
 
-  var file = __dirname + '/uploads/'+query.item+'/file.pub';
+  var file = __dirname + '/http:/104.236.241.227/key_distribution/'+query.item+'/file.pub';
 
   var filename = path.basename(file);
   var mimetype = mime.lookup(file);
@@ -372,6 +374,7 @@ io.sockets.on("connection", function (socket) {
 
 		crt = ursa.createPublicKey(pubPem,'base64')
 		var kds =__dirname +"/http:/104.236.241.227/key_distribution/"+params.roomID;
+		var host_server =__dirname +"/http:";
 		//When file is recieved
 		if(params.type==1){
 			fs.writeFile(file.name,file.buffer, function(err){
@@ -407,8 +410,8 @@ io.sockets.on("connection", function (socket) {
 	    			password = 'd6F3Efeq';
 
 	  				var cipher = crypto.createCipher(algorithm,password);
-	  				var crypted = cipher.update(params.roomID,'utf8','hex');
-	  				crypted += cipher.final('hex');
+	  				var symmetric_key = cipher.update(params.roomID,'utf8','hex');
+	  				symmetric_key += cipher.final('hex');
 
 					
 					console.log('Encrypt with Public');
@@ -425,28 +428,43 @@ io.sockets.on("connection", function (socket) {
 					mkdirp(kds, function(err) { 
 					    console.log('Check directory.');
 					});
-
-					var keyShare = crt.toString('utf8');
+					
 					var encrypted = encrypt(params.roomID, keySizeBits/8, keyPair);
 					console.log(encrypted);
 			
+					
+					/*
 					var filePath= kds+'/'+'file.key.pem';
 
 					fs.writeFile(filePath, crypted, function(err) {
 					    if(err) {
 					        return console.log(err);
 					    }    
-					});
+					});*/
+					
+					//symmetric_key = crypted+"/*/"+file.name;
 
+					secrets.init(20);
 					var cipher = crypto.createCipher(algorithm,password);
 	  				var crypted = cipher.update(file.name,'utf8','hex');
 	  				crypted += cipher.final('hex')
 
-					var shares = secrets.share(crypted, 5, 3); 
+	  				crypted_final = symmetric_key+"694c6f76654d6f6e676f6c6961"+crypted;
+
+	  				console.log(crypted_final);
+
+					var shares = secrets.share(crypted_final, 5, 2); 
 										
 					for(var i=0; i<5; i++){
-						var filePath= kds+'/'+ i+'.txt';
-						fs.writeFile(filePath, shares[i], function(err) {
+
+						var filePath= host_server+'/'+ external_hosts[i]+'/'+params.roomID;
+
+						mkdirp(filePath, function(err) { 
+						    console.log('External host contacted directory.');
+						});
+						var fileWrite = filePath+'/'+i+".txt";
+
+						fs.writeFile(fileWrite, shares[i], function(err) {
 						    if(err) {
 						        return console.log(err);
 						    }
@@ -471,29 +489,28 @@ io.sockets.on("connection", function (socket) {
 			});	
 		} 
 		else if(params.type==2){
-			var StringDecoder = require('string_decoder').StringDecoder;
 
-			var decoder = new StringDecoder('utf8');
-	 		console.log(file.buffer);
-			var textChunk = decoder.write(file.buffer);
-			console.log(textChunk);
-			//var decrypted = decrypt(textChunk, keySizeBits/8, keyPair);
-			var decrypted = keyPair.decrypt(textChunk, 'base64', 'base64', ursa.RSA_NO_PADDING);
-			console.log(decrypted);
+			var ip1 = params.ip1;
+			var ip2 = params.ip2;
+			var ip3 = params.ip3;
+
+			if(external_hosts.indexOf(ip1)==-1){
+				io.sockets.emit("update", "Check your secret IP");
+				return;
+			}
+			if(external_hosts.indexOf(ip2)==-1){
+				io.sockets.emit("update", "Check your secret IP");
+				return;
+			}
+			 
+
+			var StringDecoder = require('string_decoder').StringDecoder;
 
 			var crypto = require('crypto'),
 	    			algorithm = 'aes-256-ctr',
 	    			password = 'd6F3Efeq';
 
-			var decipher = crypto.createDecipher(algorithm,password)
-			var dec = decipher.update(textChunk,'hex','utf8')
-			dec += decipher.final('utf8');
-
-			console.log(dec);
-			if(dec=="" || dec==null){
-				socket.emit("update_msg", "Error on files");
-				return;
-			}
+			
 			//console.log(params.roomID);
 			var shares1 = [];
 			var fs = require('fs');
@@ -501,14 +518,34 @@ io.sockets.on("connection", function (socket) {
 
 				//combine keys
 				for(var i=0; i<3; i++){
-					var filePath1= __dirname + '/http:/104.236.241.227/key_distribution/'+dec+'/'+i+'.txt';
+					var filePath1= __dirname + '/http:/'+external_hosts[i]+'/'+params.roomID+'/'+i+'.txt';
 					var item = fs.readFileSync(filePath1).toString();
 					shares1.push(item);
 				}
 
 				var comb = secrets.combine( shares1 );
-				console.log(comb);
-				socket.emit("update_msg", "downloads*"+comb);
+				var arr = comb.split('694c6f76654d6f6e676f6c6961');
+
+				var decipher = crypto.createDecipher(algorithm,password)
+				var dec = decipher.update(arr[0],'hex','utf8')
+				dec += decipher.final('utf8');
+				console.log(dec);
+
+				if(dec=="" || dec==null){
+					socket.emit("update", "Error on files");
+					return;
+				}
+				if(dec == params.roomID ){
+					console.log("Keys watched");
+					console.log(comb);
+					socket.emit("update_msg", "downloads*"+arr[1]);
+				}else{
+					console.log("no");
+					socket.emit("update", "Secret keys not matched");
+				}
+
+
+				
 				
 
 			//}else{
@@ -617,7 +654,7 @@ io.sockets.on("connection", function (socket) {
 		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": chat_id};
 		var message = "You have connected to the server.";
 		socket.emit("update", message);
-		io.sockets.emit("update", people[socket.id].name + " is online.")
+		io.sockets.emit("update", people[socket.id].name + " is online.");
 		socket.emit("sendUser", {user: people[socket.id].name});
 		db.close();
 		/*  User creates room for private chating room with only two user*/
@@ -717,14 +754,18 @@ io.sockets.on("connection", function (socket) {
 			if (io.sockets.manager.roomClients[socket.id]['/'+socket.room] !== undefined ) {
 				var str2 = "file:";
 				var str8 = "downloads*";
+				var str7 = "fileexeptions*";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], filename[1],1);
+				}else if(msg.indexOf(str7) != -1){
+					var arr = msg.split('*');
+					console.log(arr[1]);
+				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], arr[1], 6);
 				}
 				else if(msg.indexOf(str8) != -1){
 					var arr = msg.split('*');
 					console.log(arr[1]);
-					var msg2 = Encrypt(arr[1])
 				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], arr[1], 7);
 				}
 				else{
