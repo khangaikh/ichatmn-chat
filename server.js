@@ -9,6 +9,8 @@ var express = require('express')
 , Room = require('./room.js')
 , _ = require('underscore')._;
 
+var t = require('console-stamp')(console, '[HH:MM:ss.l]');
+
 //var SPEKE = require('./node_modules/speke/index');
 var multer  = require('multer');
 var done=false;
@@ -175,7 +177,16 @@ function Encrypt(str) {
   } catch (ex) { return '' }
 }
 
-
+function decode(number) {
+    var string = "";
+    number = number.slice(2);
+    var length = number.length;
+    for (var i = 0; i < length;) {
+        var code = number.slice(i, i += 2);
+        string += String.fromCharCode(parseInt(code, 16));
+    }
+    return string;
+}
 function encrypt(clearText, keySizeBytes, keyPair){
     var buffer = new Buffer(clearText);
     var maxBufferSize = keySizeBytes - 42; //according to ursa documentation
@@ -228,7 +239,8 @@ function decrypt(encryptedString, keySizeBytes,keyPair){
 }
 
 function purge(s, action, chat_id) {
-	if (people[s.id].inroom) { //user is in a room
+
+	if ( typeof people[s.id].inroom != 'undefined') { //user is in a room
 		var room = rooms[people[s.id].inroom]; //check which room user is in.
 		if (s.id === room.owner) { //user in room and owns room
 			if (action === "disconnect") {
@@ -452,9 +464,11 @@ io.sockets.on("connection", function (socket) {
 	  				crypted_final = symmetric_key+"694c6f76654d6f6e676f6c6961"+crypted;
 
 	  				console.log(crypted_final);
-
+	  				
+	  				console.time("queryTime");
 					var shares = secrets.share(crypted_final, 5, 2); 
-										
+					console.timeEnd("queryTime");
+
 					for(var i=0; i<5; i++){
 
 						var filePath= host_server+'/'+ external_hosts[i]+'/'+params.roomID;
@@ -573,11 +587,36 @@ io.sockets.on("connection", function (socket) {
 		
 		/* Getting url by it is given parameter */
 
-		console.log('Current url :' + url);
+		//console.log('Current url :' + url);
 		var urlp = require('url');
 		var url_parts = urlp.parse(url, true);
 		var query = url_parts.query;
+
+
+		var item =query.item;
 		chat_id = query.id;
+
+		console.log(item);
+
+		var str = decode(item);
+
+		console.log(str);
+
+		var arr = str.split("***");
+
+		console.log(arr[0]);
+
+		var type = arr[1];
+
+
+
+		if(arr[0]==chat_id){
+			console.log("Yes");
+		}else{
+			console.log("Here there");
+			socket.emit("exists", {msg: "Char room id wrong.", proposedName: "Wrong pass"});
+			purge(socket, "disconnect",chat_id);
+		}
 
 		if(chat_id==0){
 			purge(socket, "disconnect",chat_id);
