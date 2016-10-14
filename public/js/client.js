@@ -142,6 +142,7 @@ $(document).ready(function() {
   var myRoomID = null;
   var privateRoomID =  makeid();
   var curUser = null;
+  var curType = 0;
   $("#private_actions").hide();
   $("#private_conversation").hide();
   $("#private_chatForm").hide();
@@ -632,6 +633,7 @@ $(document).ready(function() {
       $("#errors").show();
       $("#errors").append("Your browser is ancient and it doesn't support GeoLocation.");
     }
+
     function positionError(e) {
       console.log(e);
     }
@@ -680,7 +682,6 @@ $(document).ready(function() {
     socket.on("update_private_msg", function(msg) {
       
        $("#private_msg").val(msg);
- 
     });
 
     socket.on("update_msg", function(msg) {
@@ -688,27 +689,35 @@ $(document).ready(function() {
        $("#msg").val(msg);
  
     })
-
     socket.on("update-people", function(data){
       //var peopleOnline = [];
       $("#people").empty();
       $("#users").empty();
       $('#people').append("<li class=\"list-group-item active\">People online <span class=\"badge\">"+data.count+"</span></li>");
+      
       var type = data.type;
       var name = $("#me").val();
+      if(curType == 'seller'){
+        $("#typeHello").html("Hello Seller");
+        $("#sellerWindow").show();
+        $("#sellerActions").show();
+      }else{
+        $("#typeHello").html("Hello Buyers");
+        $("#buyerActions").show();
+      }
+      
+
       $.each(data.people, function(a, obj) {
-        if(obj.type === type ){
-          if (!("country" in obj)) {
-            html = "";
-          } else {
-            html = "<img class=\"flag flag-"+obj.country+"\"/>";
-          }
-          $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device+"\"></i> " + html + " <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
-          if(obj.name != name){
-            $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
-          }
             
+        if(obj.type != 0){
+            $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device +"\"></i> "+obj.type+" <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
+            if(obj.name != name){
+                $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
+            }
         }
+          
+            
+        
         //peopleOnline.push(obj.name);
       });
 
@@ -838,7 +847,6 @@ $(document).ready(function() {
       privateRoomID = data.id;
     });
 
-
     socket.on("show_actions", function(data) {
       $("#private_actions").show();
     });
@@ -856,8 +864,13 @@ $(document).ready(function() {
     });
 
     socket.on("sendUser", function(data) {
-      curUser = data.user;
+        curUser = data.user;
+        curType = data.type;
+
+        console.log("hi");
+        console.log(curType);
     });
+
 
     socket.on("setme", function(data) {
       $("#me").val(data.name);

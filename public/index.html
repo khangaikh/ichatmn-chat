@@ -56,7 +56,6 @@
     <div class="row" id="main-header" style="display:none">
       <div class="col-md-4" id="no-show2"></div>
       <div class="col-md-4">
-        <h2>iChat.mn private chat</h2>
        <!-- <a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal" style="float:right">Create chat topic</a>-->
       </div>
     </div>
@@ -66,19 +65,10 @@
       </div>
       <div class="col-md-3">
         <ul id="rooms" class="list-group" style="display:none"></ul>
-        <h4>Hello Seller</h4>
+        <h4 id="typeHello">Hello Seller</h4>
         <ul id="people" class="list-group"></ul>
-        <div style="background-color:#ccc; padding:10px; border: 1px grey solid">
-          Here is your encryped file <a href="#">Download the file</a>
-          <br />
-          Here are saved files and its location with keys
-          <br />
-          124.36.432.32 -> ybdskr <br />
-          23.435.23.54.3 -> toaser <br />
-          31.43.54.231 -> ewertw <br />
-          32.534.354.12 -> wergek<br />
-          324.43.64.232 -> jknklsd
-
+        <div class="form-inline" style="border: solid #ccc 1px; border-radius:5px; padding:10px; display:none" id="sellerWindow" >
+          <h5> This is your secret window </h5>
         </div>
       </div>
       <div class="col-md-8" >
@@ -91,24 +81,24 @@
           </div>
           <input type="submit" name="send" id="send" value="Send" class="btn btn-success btn-lg">
          <!-- <input type="button" name="start_button" id="start_button" value="Record" onclick="startButton(event)" class="btn btn-info btn-lg"> -->
-          <div class="btn-group">
+          <div class="btn-group" style="display:none" id="sellerActions">
             <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
               Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
-              <li><a href="#" name="setUp" data-toggle="modal" data-target="#tradeModal">Set up</a></li>
-              <li><a href="#" name="setUp" data-toggle="modal" data-target="#paymentModal">Make Payment</a></li>
-              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">File</a></li>
-               <li><a href="#" name="setUp" data-toggle="modal" data-target="#getFileModal">Get File</a></li>
+              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">Encrypt file</a></li>
+              <li ><a href="#" name="setUp" data-toggle="modal" data-target="#getFileModal">Save file</a></li>
               <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
             </ul>
-           <!-- <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
-              Action <span class="caret"></span>
+          </div>
+          <div class="btn-group" style="display:none" id="buyerActions">
+            <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
+              Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
-              <li><a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal">Create private room</a></li>
-              <li><a href="#" name="disconnect" id="disconnect">Disconnect from chat</a></li>
-            </ul>-->
+              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">Get ready for Trading</a></li>
+              <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
+            </ul>
           </div>
         </form>
       </div>

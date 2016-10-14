@@ -9,7 +9,7 @@ var express = require('express')
 , Room = require('./room.js')
 , _ = require('underscore')._;
 
-var t = require('console-stamp')(console, '[HH:MM:ss.l]');
+var t = require('console-stamp')(console, '[HH:MM:ss.ms]');
 
 //var SPEKE = require('./node_modules/speke/index');
 var multer  = require('multer');
@@ -313,6 +313,17 @@ function purge(s, action, chat_id) {
 			}
 		} else {//user in room but does not own room
 			if (action === "disconnect") {
+
+				if(people[s.id].type = 'seller' ){
+					var sqlite3 = require('sqlite3').verbose();
+					var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
+					var chat_id = people[s.id].chat;
+					db.run("UPDATE zarlal SET logged = ? WHERE id=?", {
+			          1: 0,
+			          2: chat_id
+			      	});
+				}
+
 				io.sockets.emit("update", people[s.id].name + " has disconnected from the server.");
 				if (_.contains((room.people), s.id)) {
 					var personIndex = room.people.indexOf(s.id);
@@ -358,6 +369,7 @@ function sqlite3_db(ip){
 io.sockets.on("connection", function (socket) {
 
 	var chat_id = 0;
+	var selleron = 0;
 	var delivery = dl.listen(socket);
 	var secrets = require('secrets.js');
 	var StringDecoder = require('string_decoder').StringDecoder;
@@ -378,9 +390,6 @@ io.sockets.on("connection", function (socket) {
 		  , msg
 		  ;
 
-		//var keySizeBits = 1024;
-		//var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
-		//var pem =ursa.toPublicPem(keyPair,"sha256");
 		var pubPem = keyPair.toPublicPem('base64');
 		console.log('privPem:', pubPem);
 
@@ -411,7 +420,7 @@ io.sockets.on("connection", function (socket) {
 			          1: file.name,
 			          2: params.roomID
 			      	});
-			      	db.close();
+			      
 					
 					mkdirp(dir, function(err) { 
 					    console.log('Check directory.');
@@ -558,14 +567,6 @@ io.sockets.on("connection", function (socket) {
 					socket.emit("update", "Secret keys not matched");
 				}
 
-
-				
-				
-
-			//}else{
-			//	console.log("Permission incorrect");
-			//}
-
 		}else{
 			console.log("Hello 3");
 		}
@@ -606,8 +607,7 @@ io.sockets.on("connection", function (socket) {
 
 		console.log(arr[0]);
 
-		var type = arr[1];
-
+		var type_real = arr[1];
 
 
 		if(arr[0]==chat_id){
@@ -621,6 +621,44 @@ io.sockets.on("connection", function (socket) {
 		if(chat_id==0){
 			purge(socket, "disconnect",chat_id);
 		}
+
+		/*Checking if two user is already loged in*/
+
+		var sqlite3 = require('sqlite3').verbose();
+		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
+
+		db.all("SELECT * FROM zarlal", function(err, rows) {  
+	        if(rows.length==0){
+	        	socket.emit("exists", {msg: "No such roomd", proposedName: "Please try again later"});
+	        }else{
+	        	rows.forEach(function (row) { 
+	        		if(row.id == chat_id){ // ticket by room id
+	        			var chatter = row.chatter;
+	        			if(row.chatter == 2){
+	        				socket.emit("exists", {msg: "Two users already logged in.", proposedName: "Please try again later"});
+	        			}else{
+	        				chatter = chatter +1;
+	        				if (type_real == 'seller'){
+	        					db.run("UPDATE zarlal SET chatter = ?, logged =? WHERE id=?", {
+						          1: chatter,
+						          2: 1,
+						          3: chat_id
+						      	});
+	        				}else{
+	        					db.run("UPDATE zarlal SET chatter = ? WHERE id=?", {
+						          1: chatter,
+						          2: chat_id
+						      	});
+	        				}
+	        				
+					      	
+	        			}
+	        		}
+			    }); 
+			}
+	    });
+	
+
 		/* Checking if public room is created */
 
 		var match = false;
@@ -690,12 +728,12 @@ io.sockets.on("connection", function (socket) {
 				return exists = true;
 		});*/
 	
-		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": chat_id};
+		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": type_real, "chat":chat_id};
 		var message = "You have connected to the server.";
 		socket.emit("update", message);
 		io.sockets.emit("update", people[socket.id].name + " is online.");
-		socket.emit("sendUser", {user: people[socket.id].name});
-		db.close();
+		socket.emit("sendUser", {user: people[socket.id].name, type : type_real });
+		
 		/*  User creates room for private chating room with only two user*/
 		/*
 		var id = uuid.v4();
@@ -968,6 +1006,26 @@ io.sockets.on("connection", function (socket) {
 	socket.on("disconnect", function() {
 		if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
 			purge(socket, "disconnect",chat_id);
+			var sqlite3 = require('sqlite3').verbose();
+			var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
+
+			db.all("SELECT * FROM zarlal", function(err, rows) {  
+		        if(rows.length==0){
+		        	socket.emit("exists", {msg: "No such roomd", proposedName: "Please try again later"});
+		        }else{
+		        	rows.forEach(function (row) { 
+		        		if(row.id == chat_id){ // ticket by room id
+		        			var chatter = row.chatter;
+		        			chatter = chatter - 1;
+		        			db.run("UPDATE zarlal SET chatter = ? WHERE id=?", {
+								1: chatter,
+								2: chat_id
+							});
+		        		}
+				    }); 
+				}
+		    });
+		    db.close();
 		}
 	});
 
@@ -1022,7 +1080,6 @@ io.sockets.on("connection", function (socket) {
 					          1: encrypted,
 					          2: roomID
 					      	});
-					      	db.close();
 					      	socket.emit("update_private_msg", "Draw your secret key<");
 		        		}
 				    })  
@@ -1156,7 +1213,6 @@ io.sockets.on("connection", function (socket) {
 		          9: a2,
 		          10: a3
 		      	});
-		      	db.close();
 		      	socket.emit("update_private_msg", "Notify to>Seller");
 		      	socket.emit("show_seller_actions_1", "Notify to>Seller");
 				console.log("Disconneting from KDS"); 
