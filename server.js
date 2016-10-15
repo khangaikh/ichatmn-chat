@@ -10,7 +10,6 @@ var express = require('express')
 , _ = require('underscore')._;
 
 var t = require('console-stamp')(console, '[HH:MM:ss.ms]');
-
 //var SPEKE = require('./node_modules/speke/index');
 var multer  = require('multer');
 var done=false;
@@ -149,18 +148,19 @@ var factorial = function(n) {
 }
 
 function Decrypt(str) {
-if (!str) { str = "" }
-str = (str == "undefined" || str == "null") ? "" : str;
-try {
-    var key = 146;
-    var pos = 0;
-    ostr = '';
-    while (pos < str.length) {
-        ostr = ostr + String.fromCharCode(key ^ str.charCodeAt(pos))
-        pos += 1;
-    };
-    return ostr;
-} catch (ex) { return '' }}
+	if (!str) { str = "" }
+	str = (str == "undefined" || str == "null") ? "" : str;
+	try {
+	    var key = 146;
+	    var pos = 0;
+	    ostr = '';
+	    while (pos < str.length) {
+	        ostr = ostr + String.fromCharCode(key ^ str.charCodeAt(pos))
+	        pos += 1;
+	    };
+	    return ostr;
+	} catch (ex) { return '' }
+}
 
 function Encrypt(str) {
   if (!str) { str = "" }
@@ -454,16 +454,6 @@ io.sockets.on("connection", function (socket) {
 					console.log(encrypted);
 			
 					
-					/*
-					var filePath= kds+'/'+'file.key.pem';
-
-					fs.writeFile(filePath, crypted, function(err) {
-					    if(err) {
-					        return console.log(err);
-					    }    
-					});*/
-					
-					//symmetric_key = crypted+"/*/"+file.name;
 
 					secrets.init(20);
 					var cipher = crypto.createCipher(algorithm,password);
@@ -570,7 +560,6 @@ io.sockets.on("connection", function (socket) {
 		}else{
 			console.log("Hello 3");
 		}
-		
 	});
 
 	// Start listening for mouse move events
@@ -702,15 +691,82 @@ io.sockets.on("connection", function (socket) {
 			}
         });
 
-        var request = require('request');
-			request.post({
-			  headers: {'content-type' : 'application/x-www-form-urlencoded'},
-			  url:     'http://localhost/ichatmn-kds.php',
-			  body:    "mes="+chat_id
-			}, function(error, response, body){
-			  console.log(body);
-			});
+		console.log("Accessing to KDS SERVER");
 
+		var request = require('request');
+
+		// Set the headers
+		var headers = {
+		    'User-Agent':       'Super Agent/0.0.1',
+		    'Content-Type':     'application/x-www-form-urlencoded'
+		}
+
+		// Configure the request
+		var options = {
+		    url: 'http://127.0.0.1:8889',
+		    method: 'POST',
+		    headers: headers,
+		    form: {'key1': 'xxx', 'key2': 'yyy'}
+		}
+
+		// Start the request
+		request(options, function (error, response, body) {
+		   
+			console.log(response);
+			console.log(body);
+			
+		    if (!error && response.statusCode == 200) {
+		        // Print out the response body
+		        console.log(body)
+		    }
+		});
+
+
+
+
+		/*
+		var querystring = require('querystring');
+		var http = require('http');
+
+		var data = querystring.stringify({
+			username: "hi",
+			password: "hi"
+		});
+
+		var options = {
+		    host: '127.0.0.1',
+		    port: 8889,
+		    method: 'POST',
+		    json: true
+		};
+
+		var req = http.request(options, function(res) {
+		    res.setEncoding('utf8');
+		    res.on('data', function (chunk) {
+		        console.log("body: " + chunk);
+		    });
+		    console.log(res);
+		});
+
+		req.write(data);
+		req.end();
+
+		console.log("KDS closed");
+
+		return;
+
+		/*
+        var request = require('request');
+		
+		request.post({
+			headers: {'content-type' : 'application/x-www-form-urlencoded'},
+			url:     'http://127.0.0.1:8889',
+			body:    "exit="+chat_id
+		}, function(error, response, body){
+		  	console.log(body);
+		});*/
+
+		return;
 		/*Checking user creditentions on openssl crypt*/
 		
 		// Nodejs openssl decryption
@@ -1089,6 +1145,7 @@ io.sockets.on("connection", function (socket) {
 			
 		}
 	});
+
 	// Finishing set up process
 	socket.on("finish", function(curUser,roomID) {
 		//Clearing all private chat information
@@ -1131,7 +1188,6 @@ io.sockets.on("connection", function (socket) {
 		room.setChating();
 		rooms[roomID] = room;
 		io.sockets.emit("roomList", {rooms: rooms, count: sizeRooms, type: chat_id, chatedId:roomID });
-		
 	});
 
 	//User save functions
@@ -1292,7 +1348,6 @@ io.sockets.on("connection", function (socket) {
 		      	socket.emit("update_private_msg", "Notify to>Buyer");
 			}
 		}
-	
 	});
 
 	//User setting functions
