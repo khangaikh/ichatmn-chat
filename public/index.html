@@ -67,8 +67,10 @@
         <ul id="rooms" class="list-group" style="display:none"></ul>
         <h4 id="typeHello">Hello Seller</h4>
         <ul id="people" class="list-group"></ul>
-        <div class="form-inline" style="border: solid #ccc 1px; border-radius:5px; padding:10px; display:none" id="sellerWindow" >
-          <h5> This is your secret window </h5>
+        <div class="form-inline" style="border: solid #DC4E30 1px; border-radius:5px; padding:10px; padding-top:15px; display:none" id="sellerWindow" >
+          <div id="seller_secret">
+            
+          </div>
         </div>
       </div>
       <div class="col-md-8" >
@@ -402,8 +404,9 @@
   <!-- Modal end -->
   
    <!-- Modal start -->
-  <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="addImage" aria-hidden="true">
-    <div class="modal-dialog">
+  <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="addImage" aria-hidden="true" style="margin-left: 32%;
+">
+  <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -412,7 +415,7 @@
         <div class="alert alert-danger" id="errors1"></div>
         <div class="modal-body">
           Please write your file password :
-          <input type="text" class="form-control input-lg" id="file_pass" />
+          <input type="password" class="form-control input-lg" id="file_pass" />
           <br>
           <p>You can  upload files up to 5MB. </p>
           <br>
@@ -420,7 +423,6 @@
             <input type="file" class="form-control input-lg" name="userPhoto" id="secretFile" />
             <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
           </form>
-         
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>

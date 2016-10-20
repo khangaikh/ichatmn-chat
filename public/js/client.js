@@ -7,11 +7,12 @@
 var final_transcript = '';
 var recognizing = false;
 var last10messages = []; //to be populated later
-var external_hosts = ['212.354.7.2', '104.463.255.1','45.23.54.89', '213.435.24.5','42.436.753.10'];
+
 
 if (!('webkitSpeechRecognition' in window)) {
   console.log("webkitSpeechRecognition is not available");
-} else {
+} 
+else {
   var recognition = new webkitSpeechRecognition();
   recognition.continuous = true;
   recognition.interimResults = true;
@@ -36,9 +37,9 @@ if (!('webkitSpeechRecognition' in window)) {
     }
     $("#msg").val(final_transcript);
     };
-  }
+}
 
-  function startButton(event) {
+function startButton(event) {
     if (recognizing) {
       recognition.stop();
       recognizing = false;
@@ -50,7 +51,7 @@ if (!('webkitSpeechRecognition' in window)) {
     recognition.start();
     $("#start_button").prop("value", "Recording ... Click to stop.");
     $("#msg").val();
-  }
+}
 //end of WebSpeech
 
 /*
@@ -81,8 +82,7 @@ function timeFormat(msTime) {
     zeroPad(d.getSeconds(), 2) + " ";
 }
 
-function makeid()
-{
+function makeid(){
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -116,21 +116,21 @@ function Encrypt(str) {
 }
 
 function Decrypt(str) {
-if (!str) { str = "" }
-str = (str == "undefined" || str == "null") ? "" : str;
-try {
-    var key = 146;
-    var pos = 0;
-    ostr = '';
-    while (pos < str.length) {
-        ostr = ostr + String.fromCharCode(key ^ str.charCodeAt(pos))
-        pos += 1;
-    };
-    return ostr;
-} catch (ex) { return '' }}
+  if (!str) { str = "" }
+  str = (str == "undefined" || str == "null") ? "" : str;
+  try {
+      var key = 146;
+      var pos = 0;
+      ostr = '';
+      while (pos < str.length) {
+          ostr = ostr + String.fromCharCode(key ^ str.charCodeAt(pos))
+          pos += 1;
+      };
+      return ostr;
+  } catch (ex) { return '' }
+}
 
 
- 
 $(document).ready(function() {
 
   var lock= new PatternLock('#patternHolder',{matrix:[5,5]});
@@ -156,6 +156,7 @@ $(document).ready(function() {
       $("#upload[type=submit]").click(function(evt){
 
         var file = $("#secretFile")[0].files[0];
+        
         var extraParams = {roomID: privateRoomID, type:1};
         delivery.send(file,extraParams);
         var msg = "File Uploaded";
@@ -226,13 +227,13 @@ $(document).ready(function() {
       });
   });
 
-  $("#file_pass").keypress(function(e){
+  $('#file_pass').on('input', function(){
     var name = $("#file_pass").val();
-    if(name.length < 2) {
+    if(name.length < 9) {
         $("#uploadForm").hide();
         $("#errors1").empty();
         $("#errors1").show();
-        $("#errors1").append("Please enter password to upload file");
+        $("#errors1").append("Please enter password at least 10 charactor long to upload file");
     } else {
       $("#uploadForm").show();
       $("#errors1").empty();
@@ -463,11 +464,8 @@ $(document).ready(function() {
   });
 
   $("#clickdownload").click(function(e) {
-
-      
+ 
   });
-
-
 
   $("#sendImage4").click(function(e) {
 
@@ -507,7 +505,6 @@ $(document).ready(function() {
 
    
    lock.reset();
-
   });
 
   $("#discard").click(function() {
@@ -551,7 +548,7 @@ $(document).ready(function() {
     console.log(a3);
     $("#fileupload").show();
       socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
-    });
+  });
 
   $("#createKey").click(function() {
 
@@ -685,10 +682,13 @@ $(document).ready(function() {
     });
 
     socket.on("update_msg", function(msg) {
-      
        $("#msg").val(msg);
- 
-    })
+    });
+
+    socket.on("update_seller", function(msg) {
+       $("#seller_secret").append("<p><strong>Step 1: </strong>Please download your encrypted file : <a href="+msg+">Download now</a></p>");
+    });
+
     socket.on("update-people", function(data){
       //var peopleOnline = [];
       $("#people").empty();
