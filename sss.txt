@@ -1,0 +1,2 @@
+http://localhost:8080/?id=3&item=0x332a2a2a73656c6c6572-seller
+http://localhost:8080/?id=3&item=0x332a2a2a6275796572

@@ -15,10 +15,11 @@ var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 var internal = 'localhost';
-var ip_run = "192.168.0.104"; //127.0.0.1
-var external_hosts = ['192.168.0.105', '192.168.0.100','192.168.0.106'];
+var ip_run = "192.168.10.110"; //127.0.0.1
+var external_hosts = ['127.0.0.1', '192.168.10.124','192.168.10.101'];
 var num_hosts = 3;
-var kds_server = "192.168.0.104"
+var kds_server = "192.168.10.110"
+var global_room=null;
 
 
 app.configure(function() {
@@ -65,6 +66,9 @@ app.get('/download?*', function(req, res){
 
   var filename = path.basename(file);
   var mimetype = mime.lookup(file);
+
+
+
 
   res.setHeader('Content-disposition', 'attachment; filename=' + filename);
   res.setHeader('Content-type', mimetype);
@@ -129,7 +133,6 @@ app.get('/', function(req, res, next) {
 });
 
 server.listen(app.get('port'), app.get('ipaddr'), function(){
-
 	console.log('Express server listening on   IP: ' + app.get('ipaddr') + ' and port ' + app.get('port')) ;
 }); 
 
@@ -187,6 +190,7 @@ function decode(number) {
     }
     return string;
 }
+
 function encrypt(clearText, keySizeBytes, keyPair){
     var buffer = new Buffer(clearText);
     var maxBufferSize = keySizeBytes - 42; //according to ursa documentation
@@ -313,10 +317,31 @@ function purge(s, action, chat_id) {
 			}
 		} else {//user in room but does not own room
 			if (action === "disconnect") {
+				console.log("Socket ID:" + s.id);
+
+				var sqlite3 = require('sqlite3').verbose();
+				var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
+
+				db.all("SELECT * FROM zarlal", function(err, rows) {  
+			        if(rows.length==0){
+			        	socket.emit("exists", {msg: "No such room", proposedName: "Please try again later"});
+			        }else{
+			        	rows.forEach(function (row) { 
+			        		if(row.id == chat_id){ // ticket by room id
+
+
+			        			var chatter = row.chatter;
+			        			chatter = chatter - 1;
+			        			db.run("UPDATE zarlal SET chatter = ? WHERE id=?", {
+									1: chatter,
+									2: chat_id
+								});
+			        		}
+					    }); 
+					}
+			    });
 
 				if(people[s.id].type = 'seller' ){
-					var sqlite3 = require('sqlite3').verbose();
-					var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 					var chat_id = people[s.id].chat;
 					db.run("UPDATE zarlal SET logged = ? WHERE id=?", {
 			          1: 0,
@@ -335,9 +360,21 @@ function purge(s, action, chat_id) {
 				io.sockets.emit("update-people", {people: people, count: sizePeople});
 				var o = _.findWhere(sockets, {'id': s.id});
 				sockets = _.without(sockets, o);
-			} else if (action === "removeRoom") {
+			}else if (action === "removeRoom") {
 				s.emit("update", "Only the owner can remove a room.");
-			} else if (action === "leaveRoom") {
+			}else if (action === "stop") {
+				io.sockets.emit("update", people[s.id].name + " has disconnected from the server.");
+				if (_.contains((room.people), s.id)) {
+					var personIndex = room.people.indexOf(s.id);
+					room.people.splice(personIndex, 1);
+					s.leave(room.name);
+				}
+				delete people[s.id];
+				sizePeople = _.size(people);
+				io.sockets.emit("update-people", {people: people, count: sizePeople});
+				var o = _.findWhere(sockets, {'id': s.id});
+				sockets = _.without(sockets, o);
+			}else if (action === "leaveRoom") {
 				if (_.contains((room.people), s.id)) {
 					var personIndex = room.people.indexOf(s.id);
 					room.people.splice(personIndex, 1);
@@ -376,27 +413,14 @@ io.sockets.on("connection", function (socket) {
 	var decoder = new StringDecoder('utf8');
 
 	delivery.on('receive.success',function(file){
+		
 		var params = file.params;
-		console.log("Room id 1: "+params.roomID);
+		var passKey = params.passKey;
+
+		console.log("Crypto ID: "+params.roomID);
+		console.log("File Key: "+params.passKey);
+		
 		var fs = require('fs');
-
-		var ursa = require("ursa");
-
-		var keySizeBits = 1024;
-		var keyPair = ursa.generatePrivateKey(keySizeBits, 65537);
-
-		var crt
-		  , key
-		  , msg
-		  ;
-
-		var pubPem = keyPair.toPublicPem('base64');
-		console.log('privPem:', pubPem);
-
-		crt = ursa.createPublicKey(pubPem,'base64')
-		var kds =__dirname +"/http:/104.236.241.227/key_distribution/"+params.roomID;
-		var host_server =__dirname +"/http:";
-		//When file is recieved
 		
 		if(params.type==1){
 
@@ -411,35 +435,46 @@ io.sockets.on("connection", function (socket) {
 			  	}else{
 
 			  		var mkdirp = require('mkdirp');
-			  		var dir = __dirname + '/uploads/'+params.roomID;
+
+			  		var dir = '/opt/lampp/htdocs/ichatmn-web/upload/'+params.roomID;
+
+			  		mkdirp(dir, function (err) {
+					    if (err) console.error(err)
+					    else console.log('successfully started encryption with AES-256!')
+					});
 
 			  		var sqlite3 = require('sqlite3').verbose();
 					var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
-			  		db.run("UPDATE tickets SET secret_name =? WHERE public_key=?", {
+			  		db.run("UPDATE tickets SET secret_name =?, file_key = ? WHERE public_key=?", {
 			          1: file.name,
-			          2: params.roomID
+			          2: passKey,
+			          3: params.roomID
 			      	});
 					
 					console.time("FileEncryption");
+					console.log("File encryption started");
+					
 					var crypto = require('crypto');
 					
 					algorithm = 'aes-256-ctr',
-	    			password = 'd6F3Efeq';
+	    			password = passKey;
 
-					var cipher = crypto.createCipher(algorithm,password)
+					var cipher = crypto.createCipher(algorithm,password);
   					var crypted = Buffer.concat([cipher.update(file.buffer),cipher.final()]);
 			    	
-					var filePath= kds+'/'+'file.pub';
+					var filePath= dir+'/'+'file.pub';
 
 					fs.writeFile(filePath, crypted, function(err) {
 					    if(err) {
 					        return console.log(err);
 					    }    
 					});
+					console.log('File encrypted.');
 					console.timeEnd("FileEncryption");
-			    	console.log('File encrypted.');
-			    	socket.emit("update_seller", filePath);
+			    	
+			    	socket.emit("update_seller", params.roomID);
+			    	
 			  	};
 			});	
 		} 
@@ -458,15 +493,12 @@ io.sockets.on("connection", function (socket) {
 				return;
 			}
 			 
-
 			var StringDecoder = require('string_decoder').StringDecoder;
 
 			var crypto = require('crypto'),
 	    			algorithm = 'aes-256-ctr',
 	    			password = 'd6F3Efeq';
 
-			
-			//console.log(params.roomID);
 			var shares1 = [];
 			var fs = require('fs');
 			//if(params.roomID==dec){
@@ -503,7 +535,6 @@ io.sockets.on("connection", function (socket) {
 			console.log("Hello 3");
 		}
 	});
-
 	// Start listening for mouse move events
 	socket.on('mousemove', function (data) {
 
@@ -514,43 +545,41 @@ io.sockets.on("connection", function (socket) {
 
 	socket.on("joinserver", function(name, device, url) {
 		
-		var exists = false;
+		var exists = 0;
 		var ownerRoomID = inRoomID = null;
 		
 		/* Getting url by it is given parameter */
 
-		//console.log('Current url :' + url);
 		var urlp = require('url');
 		var url_parts = urlp.parse(url, true);
 		var query = url_parts.query;
 
-
 		var item =query.item;
 		chat_id = query.id;
 
-		console.log(item);
+		console.log("Chat generated ID: "+item);
 
+		console.time("Decoding Chat ID");
+		console.log("Decoding ID for chat user type");
 		var str = decode(item);
-
-		console.log(str);
-
 		var arr = str.split("***");
+		console.timeEnd("Decoding Chat ID");
 
-		console.log(arr[0]);
+		console.log("User type: "+arr[1]);
 
 		var type_real = arr[1];
 
-
 		if(arr[0]==chat_id){
-			console.log("Yes");
+			console.log("Checking ID and user type");
 		}else{
-			console.log("Here there");
+			console.log("Error 0101");
 			socket.emit("exists", {msg: "Char room id wrong.", proposedName: "Wrong pass"});
 			purge(socket, "disconnect",chat_id);
 		}
 
 		if(chat_id==0){
 			purge(socket, "disconnect",chat_id);
+			return;
 		}
 
 		/*Checking if two user is already loged in*/
@@ -567,6 +596,8 @@ io.sockets.on("connection", function (socket) {
 	        			var chatter = row.chatter;
 	        			if(row.chatter == 2){
 	        				socket.emit("exists", {msg: "Two users already logged in.", proposedName: "Please try again later"});
+	        				console.log("Exiting");
+	        				purge(socket, "stop",chat_id);
 	        			}else{
 	        				chatter = chatter +1;
 	        				if (type_real == 'seller'){
@@ -581,14 +612,16 @@ io.sockets.on("connection", function (socket) {
 						          2: chat_id
 						      	});
 	        				}
-	        				
-					      	
 	        			}
 	        		}
 			    }); 
 			}
 	    });
 	
+		if(exists==1){
+			console.log("Exiting");
+			return;
+		}
 
 		/* Checking if public room is created */
 
@@ -599,6 +632,7 @@ io.sockets.on("connection", function (socket) {
 		});
 
 		/* If corresponding public room is not created then create room */
+
 		if(!match){
 			/* Adding public chat user */
 			socket.emit("sendRoomID", {id: chat_id});
@@ -615,63 +649,32 @@ io.sockets.on("connection", function (socket) {
 			console.log("Socket room :" + socket.room);
 			chatHistory[socket.room] = [];
 		}
-		/*Getting user information from database*/
 
-		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
-		var username="bulgaa";
-		
-		db.all("SELECT * FROM chat_user WHERE pass='du5j8foE'", function(err, rows) {  
-        
-        if(rows.length==0){
-        	socket.emit("exists", {msg: "The one time password is expired or wrong.", proposedName: "Wrong pass"});
-        }else{
-	        	rows.forEach(function (row) { 
-	        		username =  row.user_id;
-	            	console.log(row.user_id, row.key);  
-			    })  
-			}
-        });
-		
-
-		// Nodejs openssl decryption
-		var crypto = require('crypto'),algorithm = 'aes-256-ctr',password = name;
-		 
-		function decrypt(text){
-		  var decipher = crypto.createDecipher(algorithm,password)
-		  var dec = decipher.update(text,'hex','utf8')
-		  dec += decipher.final('utf8');
-		  return dec;
-		}
-
-		 
 		people[socket.id] = {"name" : name, "owns" : ownerRoomID, "inroom": inRoomID, "device": device, "type": type_real, "chat":chat_id};
+		
 		var message = "You have connected to the server.";
+		
 		socket.emit("update", message);
+
 		io.sockets.emit("update", people[socket.id].name + " is online.");
 		socket.emit("sendUser", {user: people[socket.id].name, type : type_real });
 		
 		/*  User creates room for private chating room with only two user*/
-		/*
-		var id = uuid.v4();
-		var user_room = new Room(name, id, socket.id);
-		rooms[id] = user_room;
-		
-		user_room.addPerson(socket.id);*/
 
 		if (_.contains((room.people), socket.id)) {
 			socket.emit("update", "You have already joined this room.");
-		} else {
+		} 
+		else {
 			if (people[socket.id].inroom !== null) {
-		    		socket.emit("update", "You are already in a room ("+rooms[people[socket.id].inroom].name+"), please leave it first to join another room.");
-		    	} else {
+		    	socket.emit("update", "You are already in a room ("+rooms[people[socket.id].inroom].name+"), please leave it first to join another room.");
+		    } 
+	    	else {
 				room.addPerson(socket.id);
 				people[socket.id].inroom = chat_id;
 				socket.join(socket.room);
 				user = people[socket.id];
 				socket.emit("sendRoomID", {id: chat_id});
 				io.sockets.in(socket.room).emit("update", user.name + " has connected to " + room.name + " room.");
-				
 				var keys = _.keys(chatHistory);
 				if (_.contains(keys, socket.room)) {
 					socket.emit("history", chatHistory[socket.room]);
@@ -687,9 +690,7 @@ io.sockets.on("connection", function (socket) {
 		sockets.push(socket);
 	});
 
-	socket.on("getOnlinePeople", function(fn) {
-        fn({people: people});
-    });
+	socket.on("getOnlinePeople", function(fn) { fn({people: people});});
 
     socket.on("getFile", function(filename) {
     	console.log('hele');
@@ -749,6 +750,7 @@ io.sockets.on("connection", function (socket) {
 				var str2 = "file:";
 				var str8 = "downloads*";
 				var str7 = "fileexeptions*";
+				var str3 = "http://localhost:8081";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], filename[1],1);
@@ -761,6 +763,9 @@ io.sockets.on("connection", function (socket) {
 					var arr = msg.split('*');
 					console.log(arr[1]);
 				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], arr[1], 7);
+				}
+				else if(msg.indexOf(str3) != -1){
+				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], msg, 3);
 				}
 				else{
 
@@ -921,28 +926,13 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("disconnect", function() {
-		if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
-			purge(socket, "disconnect",chat_id);
-			var sqlite3 = require('sqlite3').verbose();
-			var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
-			db.all("SELECT * FROM zarlal", function(err, rows) {  
-		        if(rows.length==0){
-		        	socket.emit("exists", {msg: "No such roomd", proposedName: "Please try again later"});
-		        }else{
-		        	rows.forEach(function (row) { 
-		        		if(row.id == chat_id){ // ticket by room id
-		        			var chatter = row.chatter;
-		        			chatter = chatter - 1;
-		        			db.run("UPDATE zarlal SET chatter = ? WHERE id=?", {
-								1: chatter,
-								2: chat_id
-							});
-		        		}
-				    }); 
-				}
-		    });
-		    db.close();
+		console.log("Socket ID:" + socket.id);
+
+		if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
+			
+			purge(socket, "disconnect",chat_id);
+			
 		}
 	});
 
@@ -958,7 +948,6 @@ io.sockets.on("connection", function (socket) {
         if (err) throw err
             console.log('File saved.');
       	});
-
 
 		console.log("Image created");
 
@@ -1007,13 +996,110 @@ io.sockets.on("connection", function (socket) {
 		}
 	});
 
-	// Finishing set up process
+	socket.on("distribute", function(roomID) {
+
+		console.log("Connecting KDS");
+		console.time("KDS connection");
+
+		var crypto = require('crypto'),
+		algorithm = 'aes-256-ctr',
+		password = 'd6F3Efeq';
+
+		var cipher = crypto.createCipher(algorithm,password);
+		var symmetric_key = cipher.update(roomID,'utf8','hex');
+		symmetric_key += cipher.final('hex');
+
+		secrets.init(20);
+		var cipher = crypto.createCipher(algorithm,password);
+		var crypted = cipher.update(roomID,'utf8','hex');
+		crypted += cipher.final('hex')
+
+		crypted_final = symmetric_key+"694c6f76654d6f6e676f6c6961"+crypted;
+
+		console.log(crypted_final);
+		
+		console.time("SHAMIR SPLIT TIME");
+
+		var title= "SHAMIR SPLIT TIME", t = process.hrtime();
+
+		var t1 = process.hrtime(t);
+		
+		var shares = secrets.share(crypted_final, 5, 2); 
+		console.timeEnd("SHAMIR SPLIT TIME");
+
+		console.log("%s %d seconds and %d nanoseconds", title, t1[0], t1[1])
+
+		var request = require('request');
+		var randomstring = require("randomstring");
+
+		var sqlite3 = require('sqlite3').verbose();
+		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
+
+		var mack = [];
+
+		for(var i=0; i<num_hosts; i++){
+
+			// Set the headers
+			console.time("Host distribute : "+external_hosts[i]);
+
+			var filePath= 'http://'+ external_hosts[i]+':8889';
+
+			var headers = {
+			    'User-Agent': roomID,
+			    'Content-Type': 'application/x-www-form-urlencoded'
+			}
+
+			// Configure the request
+			var options = {
+			    url: filePath,
+			    method: 'POST',
+			    headers: headers
+			}
+
+			// Start the request
+			request(options, function (error, response, body) {});
+
+			var headers = {
+			    'User-Agent': 'Super Agent/0.0.1',
+			    'Content-Type': 'application/x-www-form-urlencoded'
+			}
+			var secret_feed = randomstring.generate(7);
+			var url = 'http://'+ external_hosts[i] + '/storage/host.php';
+			// Configure the request
+			var options = {
+			    url: url,
+			    method: 'POST',
+			    headers: headers,
+			    form: {'secret': i, 'part': shares[i], "id":secret_feed}
+			}
+
+			var day = {
+				ip: external_hosts[i],
+				secret: secret_feed
+			};
+
+			mack.push(day);
+			// Start the request
+			request(options, function (error, response, body) {
+			    if (!error && response.statusCode == 200) {
+			        // Print out the response body
+			        console.log(body)
+			    }
+			});
+			console.timeEnd("Host distribute : "+external_hosts[i]);
+		}
+
+		db.run("UPDATE tickets SET ip1 =? WHERE public_key=?", {
+			1: JSON.stringify(mack),
+			2: roomID
+		});
+		console.timeEnd("KDS connection");
+		socket.emit("seller_feed", JSON.stringify(mack));
+	});
+
 	socket.on("finish", function(curUser,roomID) {
-		//Clearing all private chat information
-		//if (typeof people[socket.id] !== "undefined") { //this handles the refresh of the name screen
-		//	purge(socket, "disconnect",chat_id);
-			socket.emit("update_private_msg", "http://localhost:8081/?id="+roomID+"");
-		//}
+		console.log(roomID);
+		socket.emit("update_msg", "http://localhost:8081/?id="+roomID+"");
 	});
 
 	//Room functions
@@ -1057,162 +1143,62 @@ io.sockets.on("connection", function (socket) {
 		var sqlite3 = require('sqlite3').verbose();
 		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 
-		if(interest == 2){
-			console.log("Buyer is setting up"); 
+		console.log("Buyer is setting up"); 
+		console.log("Buyer drawing selected image created");
+		
+		console.log("Buyer pass :"+pass);
+		console.log("Pass draw size"+pass.length+"bits");
 
-			//var dataString = dataURL.split( "," )[ 1 ];
-    		//var buffer = new Buffer( dataString, 'base64');
+		//Calculating
+		var l = pass.length/2;
+		var bit = 25*Math.pow(29,(l-1)); 
 
-			console.log("Buyer drawing selected image created");
-			console.log(pass);
-			console.log(pass.length);
-
-			//Calculating
-			var l = pass.length/2;
-			var bit = 25*Math.pow(29,(l-1)); 
-
-			if(bit.length<256){
-			//Image is smaller than 256 bit alert draw agian
-			socket.emit("private_update", "Please redraw bigger image to a set key.");
-			}else{
-				console.log("Image validated over 256 bit");
-				console.log("Buyer information contacing to KDS...");
-
-				var requestData = {
-		            "user": curUser,
-		            "pass": pass,
-		            "image": image,
-		            "solutions": 2
-		   	 	}
-		   	 	console.log("Connecting to KDS...");
-		   	 	var request = require("request");
-		   	 	request({
-				    url: 'http://localhost/key_distribution/user_validate.php',
-				    method: "POST",
-				    json: true,
-				    headers: {
-				        "content-type": "application/json",
-				    },
-				    body: JSON.stringify(requestData)
-					},function (error, response, body) {
-			        if (!error && response.statusCode === 200) {
-			            console.log(body)
-			        }
-			        else {
-			        	console.log("Failed to connect to KDS...");
-			            console.log("error: " + error)
-			            //console.log("response.statusCode: " + response.statusCode)
-			            //console.log("response.statusText: " + response.statusText)
-			     	}
-				});
-				var encrypt_string = pass +"*"+ roomID +"*"+ time +"*"+minute;
-    			//Encryption with openssl with password of both users
-				var crypto = require('crypto'),
-    			algorithm = 'aes-256-ctr',
-    			password = 'd6F3Efeq';
-
-  				var cipher = crypto.createCipher(algorithm,password)
-  				var crypted = cipher.update(encrypt_string,'utf8','hex')
-  				crypted += cipher.final('hex');
-
-				console.log('Encrypted secret key: ', crypted);
-				console.log('Saving secret key: ', crypted);
-
-				db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key, secret_draw_buyer,buyer_ans_1,buyer_ans_2,buyer_ans_3) VALUES (?,?,?,?,?,?,?,?,?,?)", {
-		          1: curUser,
-		          2: roomID,
-		          3: time,
-		          4: minute,
-		          5: pass,
-		          6: crypted,
-		          7: image,
-		          8: a1,
-		          9: a2,
-		          10: a3
-		      	});
-		      	socket.emit("update_private_msg", "Notify to>Seller");
-		      	socket.emit("show_seller_actions_1", "Notify to>Seller");
-				console.log("Disconneting from KDS"); 
-				//Saving encrypted key
-			}
-
-			
+		if(bit.length<256){
+		//Image is smaller than 256 bit alert draw agian
+		socket.emit("private_update", "Please redraw bigger image to a set key.");
 		}else{
-			console.log("Seller is setting up");
 
-			//var dataString = dataURL.split( "," )[ 1 ];
-    		//var buffer = new Buffer( dataString, 'base64');
+			console.log("Image validated over 256 bit");
+			console.log("Buyer information contacing to KDS...");
+	   	 	console.log("Connecting to KDS...");
 
-			console.log("Seller drawing selected image created");
-			console.log(pass);
+			var encrypt_string = pass +"*"+ roomID +"*"+ time +"*"+minute;
+			//Encryption with openssl with password of both users
+			var crypto = require('crypto'),
+			algorithm = 'aes-256-ctr',
+			password = 'd6F3Efeq';
 
-			var l = pass.length/2;
+			var cipher = crypto.createCipher(algorithm,password)
+			var crypted = cipher.update(encrypt_string,'utf8','hex')
+			crypted += cipher.final('hex');
 
-			var bit = 25*Math.pow(29,(l-1));
+			console.log('Encrypted secret key: ', crypted);
+			console.log('Saving secret key: ', crypted);
 
-			if(bit.length<256){
-			//Image is smaller than 256 bit alert draw agian
-			socket.emit("private_update", "Please redraw bigger image to a set key.");
-			}else{
-				console.log("Image validated over 256 bit");
-				console.log("Seller information contacing to KDS...");
+			console.log("Disconneting from KDS"); 
 
-				var requestData = {
-		            "user": curUser,
-		            "pass": pass,
-		            "image": image,
-		            "solutions": 2
-		   	 	}
-		   	 	console.log("Connecting to KDS...");
-		   	 	var request = require("request");
-		   	 	request({
-				    url: 'http://localhost/key_distribution/user_validate.php',
-				    method: "POST",
-				    json: true,
-				    headers: {
-				        "content-type": "application/json",
-				    },
-				    body: JSON.stringify(requestData)
-					},function (error, response, body) {
-			        if (!error && response.statusCode === 200) {
-			            console.log(body)
-			        }
-			        else {
-			  
-			            console.log("error: " + error)
-			            console.log("response.statusCode: " + response.statusCode)
-			            console.log("response.statusText: " + response.statusText)
-			     	}
-				});
-				var encrypt_string = pass +"*"+ roomID +"*"+ time +"*"+minute;
-    			//Encryption with openssl with password of both users
-				var crypto = require('crypto'),
-    			algorithm = 'aes-256-ctr',
-    			password = 'd6F3Efeq';
-
-  				var cipher = crypto.createCipher(algorithm,password)
-  				var crypted = cipher.update(encrypt_string,'utf8','hex')
-  				crypted += cipher.final('hex');
-
-				console.log('Encrypted secret key: ', crypted);
-				console.log('Saving secret key: ', crypted);
-	
-				db.run("INSERT INTO tickets (seller, public_key, time, minute, seller_key, secret_draw_seller) VALUES (?,?,?,?,?,?)", {
-		          1: curUser,
-		          2: roomID,
-		          3: time,
-		          4: minute,
-		          5: pass,
-		          6: image
-		      	});
-		      	db.close();
-		      	socket.emit("update_private_msg", "Notify to>Buyer");
-			}
+			db.run("INSERT INTO tickets (buyer, public_key, time, minute, buyer_key, secret_key, secret_draw_buyer,buyer_ans_1,buyer_ans_2,buyer_ans_3, seller_attemp, buyer_attemp) VALUES (?,?,?,?,?,?,?,?,?,?)", {
+	          1: curUser,
+	          2: roomID,
+	          3: time,
+	          4: minute,
+	          5: pass,
+	          6: crypted,
+	          7: image,
+	          8: a1,
+	          9: a2,
+	          10: a3,
+	          11: 3,
+	          12: 3
+	      	});
+	      	console.log("KDS ticket created");
+	      	io.sockets.emit("update-people", {people: people, count: sizePeople, type: chat_id, user: people[socket.id].name , seller:1, roomID:roomID});
 		}
 	});
 
 	//User setting functions
 	socket.on("set_user", function( pass, roomID, curUser, image, interest,a1,a2,a3) {
+		
 		var sqlite3 = require('sqlite3').verbose();
 		var db = sqlite3_db("http://localhost/ichatmn-web/ichat.db");
 		console.log(interest);
@@ -1251,6 +1237,7 @@ io.sockets.on("connection", function (socket) {
 	});
 
 	socket.on("joinRoom", function(id) {
+
 		if (typeof people[socket.id] !== "undefined") {
 			var room = rooms[id];
 			if (socket.id === room.owner) {

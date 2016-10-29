@@ -40,6 +40,7 @@
 </head>
 <body>
   <input id="me" type="text" style="display:none"/>
+  
   <div class="main col-md-6 col-md-offset-3">
     <div class="alert alert-danger" id="errors"></div>
     <div id="login-screen">
@@ -56,7 +57,6 @@
     <div class="row" id="main-header" style="display:none">
       <div class="col-md-4" id="no-show2"></div>
       <div class="col-md-4">
-       <!-- <a href="#" name="createRoom" data-toggle="modal" data-target="#roomModal" style="float:right">Create chat topic</a>-->
       </div>
     </div>
 
@@ -69,7 +69,12 @@
         <ul id="people" class="list-group"></ul>
         <div class="form-inline" style="border: solid #DC4E30 1px; border-radius:5px; padding:10px; padding-top:15px; display:none" id="sellerWindow" >
           <div id="seller_secret">
-            
+            <div id="seller_stepii">
+              
+            </div>
+            <div id="seller_secret_ips">
+                
+            </div>
           </div>
         </div>
       </div>
@@ -83,14 +88,15 @@
           </div>
           <input type="submit" name="send" id="send" value="Send" class="btn btn-success btn-lg">
          <!-- <input type="button" name="start_button" id="start_button" value="Record" onclick="startButton(event)" class="btn btn-info btn-lg"> -->
-          <div class="btn-group" style="display:none" id="sellerActions">
+          <div class="btn-group"  id="sellerActions" style="display:none">
             <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
               Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
-              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">Encrypt file</a></li>
-              <li ><a href="#" name="setUp" data-toggle="modal" data-target="#getFileModal">Save file</a></li>
-              <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
+              <li id="sellerTrade"><a href="#"  data-toggle="modal" data-target="#modalSeller">Configure Trade</a></li>
+              <li id="sellerFile" style="display:none"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">Encrypt file</a></li>
+              <li id="sellerKey" style="display:none"><a href="#" name="setUp" data-toggle="modal" data-target="#getFileModal">Save secret key to servers</a></li>
+              <li id="sellerFinish" style="display:none"><a href="#" id="finish">Finish up</a></li>
             </ul>
           </div>
           <div class="btn-group" style="display:none" id="buyerActions">
@@ -98,41 +104,8 @@
               Actions <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
-              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">Get ready for Trading</a></li>
+              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#tradeModal">Get ready for Trading</a></li>
               <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
-            </ul>
-          </div>
-        </form>
-      </div>
-      <div class="col-md-6">
-        <div id="private_conversation">
-          <h4>Private Chat </h4>
-          <ul id="private_msgs" class="list-unstyled"></ul>
-        </div>
-        <form id="private_chatForm" class="form-inline">
-          <div class="form-group">
-            <input type="text" class="form-control input-lg" placeholder="Private message" id="private_msg">
-          </div>
-          <input type="submit" name="private_send" id="private_send" value="Send" class="btn btn-success btn-lg">
-
-          <div class="btn-group" id="private_actions" >
-            <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
-              Buyer actions <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-              <li><a href="#" name="setUp" data-toggle="modal" data-target="#tradeModal">Set up</a></li>
-              <li><a href="#" name="setUp" data-toggle="modal" data-target="#paymentModal">Make Payment</a></li>
-               <li><a href="#" name="setUp" data-toggle="modal" data-target="#getFileModal">Get File</a></li>
-              <li style="display:none" id="buyerFinish"><a href="#" id="finish">Finish up</a></li>
-            </ul>
-          </div>
-          <div class="btn-group" id="seller_actions" style="display:none">
-            <button type="button" class="btn btn-lg btn-info dropdown-toggle" data-toggle="dropdown" >
-              Seller actions <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-              <li style="display:none" id="sellerActions"><a href="#" name="setUp" data-toggle="modal" data-target="#modalSeller">Set up trade info</a></li>
-              <li id="sellerFile"><a href="#" id="fileupload" data-toggle="modal" data-target="#uploadFile">File</a></li>
             </ul>
           </div>
         </form>
@@ -173,7 +146,7 @@
   <!-- Modal end -->
 
   <!-- Modal start -->
-  <div class="modal fade" id="tradeModal" role="dialog" aria-hidden="true" style="1800px">
+  <div class="modal fade" id="tradeModal" role="dialog" aria-hidden="true" style="margin-left: 32%; width:800px">
     <div class="modal-dialog" style="700px">
       <div class="modal-content" style="700px">
         <div class="modal-header">
@@ -181,16 +154,21 @@
           <h4 class="modal-title" id="createRoomLabel">Setting up trading room info</h4>
         </div>
         <div class="modal-body">
-          <p>You can  set up a trading room with your buyer or seller. </p>
+          <p id="buyer_step_1">
+            <strong>STEP 1.</strong>
+            Please Start Trade. Please fill in the security answers. Answers must be at least 4 letter long and at most 26 letter long. 
+          </p>
+          <p id="buyer_step_2" style="display:none">
+            <strong>STEP 2.</strong>
+            Please select image of secret drawing background. <strong style="color:red">Paste only images link address! </strong>
+          </p>
+          <p id="buyer_step_3" style="display:none">
+            <strong>STEP 3.</strong>
+            Please draw your secret drawing to login to Trade room. <strong style="color:red">Use more than 4 lines! </strong>
+          </p>
           <br>
           <form class="form-inline" id="createRoomForm-1">
-            <select id="interest" class="form-control input-sm" style="display: none">
-                <option value="2" selected>Buyer</option>
-                <option value="1">Seller</option>
-            </select>
-            <br />
-            <br />
-              1. <select class="form-control input-sm" style="max-width:150px">
+              1. <select class="form-control input-sm" style="width:80%">
                 <option value="0">--Choose question--</option>
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
@@ -202,8 +180,9 @@
                 <option>What was your dream job as a child?</option>
                 <option>What is the middle name of your youngest child?</option>
                 <option>What school did you attend for sixth grade?</option>
-              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans1" /> <br /><br />
-              2. <select class="form-control input-sm" style="max-width:150px">
+              </select><br /><br />  
+              Answer : <input class="form-control input-sm" style="width:72%" id="ans1" /> <br /><br />
+              2. <select class="form-control input-sm" style="width:80%">
                 <option value="0">--Choose question--</option>
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
@@ -215,8 +194,8 @@
                 <option>What was your dream job as a child?</option>
                 <option>What is the middle name of your youngest child?</option>
                 <option>What school did you attend for sixth grade?</option>
-              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans2" /> <br /><br />
-              3. <select class="form-control input-sm" style="max-width:150px">
+              </select> <br /><br />  Answer : <input class="form-control input-sm" style="width:72%" id="ans2" /> <br /><br />
+              3. <select class="form-control input-sm" style="width:80%">
                  <option value="0">--Choose question--</option>
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
@@ -228,17 +207,13 @@
                 <option>What was your dream job as a child?</option>
                 <option>What is the middle name of your youngest child?</option>
                 <option>What school did you attend for sixth grade?</option>
-              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans3" />
+              </select> <br /><br />  Answer : <input class="form-control input-sm" style="width:72%" id="ans3" />
           </form>
               <br /> 
               
           <div id="image-upload-1" style="display:none">
             <p>Please paste your chosen image link</p>
             <input id ="userPhoto" type="text" class="form-control input-lg" name="userPhoto" />
-            <!--<form id ="uploadForm" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
-              <input type="file" class="form-control input-lg" name="userPhoto" />
-              <input type="submit" class="btn btn-lg btn-sm" value="Upload Image" id="upload"/>
-            </form>-->
             <br /> 
           </div>
           <div id="image-upload-2" style="display:none">
@@ -260,7 +235,7 @@
   <!-- Modal end -->
 
   <!-- Modal start -->
-  <div class="modal fade" id="modalSeller" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true">
+  <div class="modal fade" id="modalSeller" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true" style="margin-left: 32%; width:800px">
     <div class="modal-dialog" style="700px">
       <div class="modal-content" style="700px">
         <div class="modal-header">
@@ -268,11 +243,11 @@
           <h4 class="modal-title" id="createRoomLabel">Setting up trading room info</h4>
         </div>
         <div class="modal-body">
-          <p>You can  set up a trading room with your buyer or seller. </p>
+          <p>Please insert your security answers </p>
           <br>
           <form class="form-inline" id="createRoomForm-2">
             <br />
-              1. <select class="form-control input-sm" style="max-width:150px" id="">
+              1. <select class="form-control input-sm" style="width:80%" id="">
                  <option value="0">--Choose question--</option>
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
@@ -284,8 +259,9 @@
                 <option>What was your dream job as a child?</option>
                 <option>What is the middle name of your youngest child?</option>
                 <option>What school did you attend for sixth grade?</option>
-              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans11" /> <br /><br />
-              2. <select class="form-control input-sm" style="max-width:150px">
+              </select>  <br /><br />
+              Answer : <input class="form-control input-sm" style="width:72%" id="ans11" /> <br /><br />
+              2. <select class="form-control input-sm"  style="width:80%">
                  <option value="0">--Choose question--</option>
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
@@ -297,8 +273,9 @@
                 <option>What was your dream job as a child?</option>
                 <option>What is the middle name of your youngest child?</option>
                 <option>What school did you attend for sixth grade?</option>
-              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans21" /> <br /><br />
-              3. <select class="form-control input-sm" style="max-width:150px">
+              </select> <br /><br />
+               Answer : <input class="form-control input-sm" style="width:72%" id="ans21" /> <br /><br />
+              3. <select class="form-control input-sm" style="width:80%">
                  <option value="0">--Choose question--</option>
                 <option>What is  car you want to drive?</option>
                 <option>What is  name your fans singer?</option>
@@ -310,10 +287,10 @@
                 <option>What was your dream job as a child?</option>
                 <option>What is the middle name of your youngest child?</option>
                 <option>What school did you attend for sixth grade?</option>
-              </select>  Answer : <input class="form-control input-sm" style="width:250px" id="ans31" />
+              </select> <br /><br />
+               Answer : <input class="form-control input-sm" style="width:72%" id="ans31" />
           </form>
-              <br /> 
-              
+          <br />            
           <div id="image-upload-3" style="display:none">
             <p>Please paste your chosen images</p>
             <input id ="userPhoto1" type="text" class="form-control input-lg" name="userPhoto1" />
@@ -331,7 +308,7 @@
         </div>
         <div class="modal-footer">
           <button id="sendImage3" class="btn btn-lg btn-success">Next</button>
-           <button id="sendImage4" class="btn btn-lg btn-success" style="display:none">Next</button>
+          <button id="sendImage4" class="btn btn-lg btn-success" style="display:none">Next</button>
           <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Discard</button>
           <button id="clearing" type="button" class="btn btn-lg btn-default" style="display:none">Clear</button>
           <button data-dismiss="modal" id="createSeller" class="btn btn-success btn-lg" style="display:none">Set up</button>
@@ -360,23 +337,28 @@
   <!-- Modal end -->
 
   <!-- Modal start -->
-  <div class="modal fade" id="getFileModal" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true">
+  <div class="modal fade" id="getFileModal" tabindex="-1" role="dialog" aria-labelledby="createRoomLabel" aria-hidden="true"  style="margin-left: 32%; width:800px">
     <div class="modal-dialog" style="700px">
       <div class="modal-content" style="700px">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="createRoomLabel">GET verified</h4>
+          <h4 class="modal-title" id="createRoomLabel">Please select encryption </h4>
         </div>
         <div class="modal-body">
-          <form id ="uploadForm1" enctype ="multipart/form-data" action="/api/photo"  method="post"  class="form-inline">
-            Upload your encrypted file:<br />
-            <input type="file" class="form-control input-lg" name="userPhoto1" id="permissionFile" required /><br /><br />
-            Write your secret host IPs:<br />
-            <input type="text" class="form-control input-lg" name="userPhoto2" id="encryptedFile1" placeholder="IP1" required/><br />
-            <input type="text" class="form-control input-lg" name="userPhoto7" id="encryptedFile7" placeholder="IP2"  required/><br />
-            <input type="text" class="form-control input-lg" name="userPhoto8" id="encryptedFile8" placeholder="IP3 optional" /><br />
-            <br />
-            <input type="submit" class="btn btn-lg btn-default" value="Decrypt file" id="upload1"/>
+          <form class="form-inline">
+            Choose encryption type:<br />
+            <select class="form-control input-sm" style="width:80%" id="encrypt_type">
+                <option>AES-256</option>
+                <option>SHA-256</option>
+                <option>Hashin-512</option>
+            </select><br /><br />
+            Restore number of servers:<br />
+            <select class="form-control input-sm" style="width:80%" id="recover_type">
+                <option>3</option>
+                <option>4</option>
+                <option>All</option>
+            </select><br /><br />
+            <button id="distribute" class="btn btn-success btn-lg">Save keys to Hosts</button>
           </form>
         </div>
       </div>
@@ -404,30 +386,29 @@
   <!-- Modal end -->
   
    <!-- Modal start -->
-  <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="addImage" aria-hidden="true" style="margin-left: 32%;
-">
-  <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-          <h4 class="modal-title" id="createRoomLabel">Seller please upload your file</h4>
+  <div class="modal fade" id="uploadFile" tabindex="-1" role="dialog" aria-labelledby="addImage" aria-hidden="true" style="margin-left: 32%;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="createRoomLabel">Seller please upload your file</h4>
+          </div>
+          <div class="alert alert-danger" id="errors1"></div>
+          <div class="modal-body">
+            Please write your file password :
+            <input type="password" class="form-control input-lg" id="file_pass" />
+            <br>
+            <p>You can  upload files up to 5MB. </p>
+            <br>
+            <form id ="uploadForm" enctype ="multipart/form-data"   method="post"  class="form-inline" style="display:none">
+              <input type="file" class="form-control input-lg" name="userPhoto" id="secretFile" />
+              <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
+          </div>
         </div>
-        <div class="alert alert-danger" id="errors1"></div>
-        <div class="modal-body">
-          Please write your file password :
-          <input type="password" class="form-control input-lg" id="file_pass" />
-          <br>
-          <p>You can  upload files up to 5MB. </p>
-          <br>
-          <form id ="uploadForm" enctype ="multipart/form-data"   method="post"  class="form-inline" style="display:none">
-            <input type="file" class="form-control input-lg" name="userPhoto" id="secretFile" />
-            <input type="submit" class="btn btn-lg btn-default" value="Upload Image" id="upload"/>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">Close</button>
-        </div>
-      </div>
     </div>
   </div>
   <!-- Modal end -->

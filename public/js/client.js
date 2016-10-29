@@ -52,11 +52,7 @@ function startButton(event) {
     $("#start_button").prop("value", "Recording ... Click to stop.");
     $("#msg").val();
 }
-//end of WebSpeech
 
-/*
-Functions
-*/
 function toggleNameForm() {
    $("#login-screen").toggle();
 }
@@ -66,7 +62,6 @@ function toggleChatWindow() {
   $("#main-header").toggle();
 }
 
-// Pad n to specified size by prepending a zeros
 function zeroPad(num, size) {
   var s = num + "";
   while (s.length < size)
@@ -74,7 +69,7 @@ function zeroPad(num, size) {
   return s;
 }
 
-// Format the time specified in ms from 1970 into local HH:MM:SS
+
 function timeFormat(msTime) {
   var d = new Date(msTime);
   return zeroPad(d.getHours(), 2) + ":" +
@@ -92,7 +87,6 @@ function makeid(){
     return text;
 }
 
-// Format the time specified in ms from 1970 into local HH:MM:SS
 function hello(caller) {
   var d = new Date(msTime);
   return zeroPad(d.getHours(), 2) + ":" +
@@ -143,6 +137,8 @@ $(document).ready(function() {
   var privateRoomID =  makeid();
   var curUser = null;
   var curType = 0;
+  var global_room = null;
+
   $("#private_actions").hide();
   $("#private_conversation").hide();
   $("#private_chatForm").hide();
@@ -156,11 +152,12 @@ $(document).ready(function() {
       $("#upload[type=submit]").click(function(evt){
 
         var file = $("#secretFile")[0].files[0];
-        
-        var extraParams = {roomID: privateRoomID, type:1};
+        var  pass = $("#file_pass").val();
+
+        var extraParams = {roomID: privateRoomID, type:1, passKey: pass};
         delivery.send(file,extraParams);
         var msg = "File Uploaded";
-        //socket.emit("private_send", new Date().getTime(), msg);
+        
         evt.preventDefault();
       });
 
@@ -184,7 +181,6 @@ $(document).ready(function() {
         }else{
           alert("Please select secret IPS");
         }
-       
       });
 
     });
@@ -206,7 +202,7 @@ $(document).ready(function() {
     });
 
     delivery.on('receive.start',function(fileUID){
-      console.log('receiving a file!');
+        console.log('receiving a file!');
     });
  
     delivery.on('receive.success',function(file,roomID){
@@ -377,12 +373,21 @@ $(document).ready(function() {
     });
   });
 
+  $("#distribute").click(function() {
+
+    var type = $("#encrypt_type").val();
+    var recover = $("#recover_type").val();
+    var roomID = $("#me").val();
+
+    socket.emit("distribute", roomID, function(data) {
+    });
+  });
+
   $("#sendImage").click(function(e) {
+    
     var a1 = $("#ans1").val();
     var a2 = $("#ans2").val();
     var a3 = $("#ans3").val();
-
-
 
     if(a1=="" || a2=="" || a3=="" || a1.length<4 || a2.length<4 || a3.length<4 || a1.length>26 || a2.length>26 || a3.length>26){
         alert("Please fill your answers answer shoudl be at least 4 and less then 26");
@@ -392,6 +397,8 @@ $(document).ready(function() {
       $("#createRoomForm-1").hide();
       $("#sendImage").hide();
       $("#sendImage1").show();
+      $("#buyer_step_1").hide();
+      $("#buyer_step_2").show();
       $("#image-upload-1").show();
       var url = 'http://image.baidu.com/search/index?tn=baiduimage&ie=utf-8&word='+a3;
       var win = window.open(url, '_blank');
@@ -414,12 +421,13 @@ $(document).ready(function() {
   });
 
   $("#sendImage3").click(function(e) {
+    
     var a1 = $("#ans11").val();
     var a2 = $("#ans21").val();
     var a3 = $("#ans31").val();
 
     if(a1=="" || a2=="" || a3=="" || a1.length<4 || a2.length<4 || a3.length<4 || a1.length>26 || a2.length>26 || a3.length>26){
-        alert("Please fill your answers");
+        alert("Please fill your answers. Answer must be at least 4 letters long and at most 26 letter");
         e.preventDefault();
         return;
     }else{
@@ -456,6 +464,8 @@ $(document).ready(function() {
       }
       $("#image-upload-1").hide(); 
       $("#image-upload-2").show();
+      $("#buyer_step_2").hide();
+      $("#buyer_step_3").show();
       $("#patternHolder").css('background', 'url(' + user_link + ')');  
       $("#patternHolder").css('background-size', 'contain');   
       $("#sendImage1").hide();
@@ -464,7 +474,6 @@ $(document).ready(function() {
   });
 
   $("#clickdownload").click(function(e) {
- 
   });
 
   $("#sendImage4").click(function(e) {
@@ -490,12 +499,11 @@ $(document).ready(function() {
     var dataURL = canvas[0].toDataURL();
     socket.emit("save_key", curUser, myRoomID, dataURL);
     ctx.clearRect(0, 0, 1500, 600);
-
   });
 
   $("#finish").click(function() {
     if (confirm('Are you sure to finish trading info?')) {
-        var roomID = privateRoomID;
+        var roomID = $("#me").val();
         socket.emit("finish", curUser, roomID);
     }
     // save canvas image as data url (png format by default)
@@ -529,15 +537,18 @@ $(document).ready(function() {
     var temp =arr[0];
     console.log(pattern);
     console.log(arr);
+    
     for(var i=0; i<arr.length; i++){
       if(arr[i]!=temp){
         temp=arr[i];
         pass = pass+''+temp;  
       }
     }
+
     console.log(pass);
 
-    var roomID = privateRoomID;
+    var roomID = $("#me").val();
+
     var a1 = $("#ans11").val();
     var a2 = $("#ans21").val();
     var a3 = $("#ans31").val();
@@ -546,8 +557,9 @@ $(document).ready(function() {
     console.log(a1);
     console.log(a2);
     console.log(a3);
+
     $("#fileupload").show();
-      socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
+    socket.emit("set_user", pass, roomID, curUser, user_link, 1, a1,a2,a3);
   });
 
   $("#createKey").click(function() {
@@ -565,26 +577,24 @@ $(document).ready(function() {
         pass = pass+''+temp;  
       }
     }
+    
     console.log(pass);
-    var user_link = $("#userPhoto").val();
-    var interest = $("#interest").val();
+
     var roomID = privateRoomID;
+
     var a1 = $("#ans1").val();
     var a2 = $("#ans2").val();
     var a3 = $("#ans3").val();
     var user_link = $("#userPhoto").val();
 
-    socket.emit("save_user", interest, '1', '1', pass, roomID, curUser, a1, a2, a3, user_link, function(data) {
-       alert(data);
-       if (data == 1) {
-          //Seller
-           $("#private_msgs").append("<li> <a href='#' data-toggle='modal' data-target='#modalBuyer' > Send buyer for notify </a></li>");
-        } else {      
-          //Buyer
-           $("#private_msgs").append("<li> <a href='#' data-toggle='modal' data-target='#modalSeller' > Send seller for notify </a></li>");
+    socket.emit("save_user", 2, '1', '1', pass, roomID, curUser, a1, a2, a3, user_link, function(data) { 
+      if(data==1){
+        console.log("Seller actions show"+data);
+        if(curUser=='seller'){
+          $("#sellerActions").show();
         }
+      }
     });
-    socket.emit("show_seller_actions_1", "Notify to>Seller");
   });
 
   $("#rooms").on('click', '.joinRoomBtn', function() {
@@ -620,13 +630,20 @@ $(document).ready(function() {
     $("#errors").empty();
     $("#errors").show();
     $("#errors").append(data.msg + " Try <strong>" + data.proposedName + "</strong>");
+    $("#main-chat-screen").hide();
+    setTimeout(function(){
+      window.location.reload();
+    }, 3000);
   });
 
   socket.on("joined", function() {
+    
     $("#errors").hide();
+
     if (navigator.geolocation) { //get lat lon of user
       navigator.geolocation.getCurrentPosition(positionSuccess, positionError, { enableHighAccuracy: true });
-    } else {
+    } 
+    else {
       $("#errors").show();
       $("#errors").append("Your browser is ancient and it doesn't support GeoLocation.");
     }
@@ -676,6 +693,20 @@ $(document).ready(function() {
       $("#private_msgs").append("<li>" + msg + "</li>");
     });
 
+    socket.on("seller_feed", function(msg) {
+      console.log(msg);
+      var obj = $.parseJSON(msg);
+      $("#seller_secret_ips").empty();
+      $("#seller_secret_ips").append("<p><strong>Step 2:</strong> Your secret key is stored on following servers</p>");
+        for (var i = 0; i < obj.length; i++) {
+            var text = "<p>Host "+i+": "+obj[i].ip+" secret key: "+obj[i].secret+"</p>";
+            $("#seller_secret_ips").append(text);
+        }  
+        $("#getFileModal").modal("toggle");
+        $("#sellerFinish").show();
+    });
+
+
     socket.on("update_private_msg", function(msg) {
       
        $("#private_msg").val(msg);
@@ -686,7 +717,8 @@ $(document).ready(function() {
     });
 
     socket.on("update_seller", function(msg) {
-       $("#seller_secret").append("<p><strong>Step 1: </strong>Please download your encrypted file : <a href="+msg+">Download now</a></p>");
+       $("#seller_stepii").append("<p><strong>Step 1: </strong>Please download your encrypted file :<a href='http://localhost/ichatmn-web/upload/"+msg+"/file.pub' download='proposed_file_name'>Download now</a></p>");
+       $("#sellerKey").show();
     });
 
     socket.on("update-people", function(data){
@@ -697,39 +729,34 @@ $(document).ready(function() {
       
       var type = data.type;
       var name = $("#me").val();
+
+      var seller = data.seller;
+      console.log("*********: "+seller);
+
       if(curType == 'seller'){
         $("#typeHello").html("Hello Seller");
         $("#sellerWindow").show();
-        $("#sellerActions").show();
+        //$("#sellerActions").show();
+        if(seller == 1){
+          $("#sellerActions").show();
+          $("#me").val(data.roomID);
+        }
       }else{
         $("#typeHello").html("Hello Buyers");
         $("#buyerActions").show();
+        if(seller == 1){
+          $("#me").val(data.roomID);
+        }
       }
-      
 
-      $.each(data.people, function(a, obj) {
-            
+      $.each(data.people, function(a, obj) {   
         if(obj.type != 0){
             $('#people').append("<li class=\"list-group-item\"><span>" + obj.name + "</span> <i class=\"fa fa-"+obj.device +"\"></i> "+obj.type+" <a href=\"#\" class=\"whisper btn btn-xs\">private msg</a></li>");
             if(obj.name != name){
                 $('#users').append("<option value="+obj.name+"><span>" + obj.name + "</span></option>");  
             }
         }
-          
-            
-        
-        //peopleOnline.push(obj.name);
       });
-
-      /*var whisper = $("#whisper").prop('checked');
-      if (whisper) {
-        $("#msg").typeahead({
-            local: peopleOnline
-        }).each(function() {
-           if ($(this).hasClass('input-lg'))
-                $(this).prev('.tt-hint').addClass('hint-lg');
-        });
-      }*/
     });
 
     socket.on("chat", function(msTime, person, msg, file) {
@@ -744,6 +771,9 @@ $(document).ready(function() {
         var item3 = external_hosts[Math.floor(Math.random()*external_hosts.length)];
 
         $("#msgs").append("<li> <strong><span class='text-success'>"+ timeFormat(msTime) + person.name +"</span></strong>: <a href='/download?item="+msg+"' target='_blank'> Encrypted file </a> IPS: "+item1+", "+item2+", "+item3+"</li>");
+      }
+      else if(file == 3){
+         $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href="+msg+">Trade room link</a></li>");
       }
       else{
         $("#msgs").append("<li><strong><span class='text-success'>" + timeFormat(msTime) + person.name + "</span></strong>: <a href='#' class=\"getfiles\" onclick=' socket.emit('getFile','"+msg+"');'>"+msg+"</a></li>");
@@ -850,6 +880,7 @@ $(document).ready(function() {
     socket.on("show_actions", function(data) {
       $("#private_actions").show();
     });
+
     socket.on("show_file_upload", function(data) {
       $("#sellerFile").show();
     });
@@ -859,8 +890,10 @@ $(document).ready(function() {
     });
 
     socket.on("show_seller_actions_1", function(data) {
-      console.log(data);
-      $("#sellerActions").show();
+      console.log("Seller actions show"+data);
+      if(curUser=='seller'){
+        $("#sellerActions").show();
+      }
     });
 
     socket.on("sendUser", function(data) {
@@ -870,7 +903,6 @@ $(document).ready(function() {
         console.log("hi");
         console.log(curType);
     });
-
 
     socket.on("setme", function(data) {
       $("#me").val(data.name);
