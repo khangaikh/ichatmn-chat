@@ -130,9 +130,9 @@ $(document).ready(function() {
   var lock= new PatternLock('#patternHolder',{matrix:[5,5]});
   var lock1= new PatternLock('#patternHolder1',{matrix:[5,5]});
     
-  var ip_run = 'localhost'; //159.203.105.18
+  var ip_run = '192.168.10.100'; //159.203.105.18
   //setup "global" variables first
-  var socket = io.connect("127.0.0.1:8080");
+  var socket = io.connect("192.168.10.110:8080");
   var myRoomID = null;
   var privateRoomID =  makeid();
   var curUser = null;
@@ -152,8 +152,9 @@ $(document).ready(function() {
       $("#upload[type=submit]").click(function(evt){
 
         var file = $("#secretFile")[0].files[0];
-        var  pass = $("#file_pass").val();
-
+        var pass = $("#file_pass").val();
+        privateRoomID  = $("#me").val();
+        
         var extraParams = {roomID: privateRoomID, type:1, passKey: pass};
         delivery.send(file,extraParams);
         var msg = "File Uploaded";
@@ -717,7 +718,7 @@ $(document).ready(function() {
     });
 
     socket.on("update_seller", function(msg) {
-       $("#seller_stepii").append("<p><strong>Step 1: </strong>Please download your encrypted file :<a href='http://localhost/ichatmn-web/upload/"+msg+"/file.pub' download='proposed_file_name'>Download now</a></p>");
+       $("#seller_stepii").append("<p><strong>Step 1: </strong>Please download your encrypted file :<a href='http://192.168.10.110/ichatmn-web/upload/"+msg+"/file.pub' download='proposed_file_name'>Download now</a></p>");
        $("#sellerKey").show();
     });
 
