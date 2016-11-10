@@ -14,17 +14,18 @@ var t = require('console-stamp')(console, '[HH:MM:ss.ms]');
 var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs/ichatmn-web';
-var internal = '192.168.10.110';
-var ip_run = "192.168.10.110"; //127.0.0.1
-var external_hosts = ['127.0.0.1', '192.168.10.124'];//,'192.168.10.101'];
-var num_hosts = 2;
-var kds_server = "192.168.10.110"
+
+var ip_run = "192.168.10.107"; //127.0.0.1
+var external_hosts = ['127.0.0.1', '192.168.10.124','192.168.10.100'];
+var num_hosts = 3;
+var kds_server = ip_run;
+var internal = ip_run;
 var global_room=null;
 
 
 app.configure(function() {
 	app.set('port', process.env.OPENSHIFT_NODEJS_PORT || 8080);
-  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || "192.168.10.110");
+  	app.set('ipaddr', process.env.OPENSHIFT_NODEJS_IP || ip_run);
 	app.use(express.bodyParser());
 	app.use(express.methodOverride());
 	app.use(express.static(__dirname + '/public'));
@@ -320,7 +321,7 @@ function purge(s, action, chat_id) {
 				console.log("Socket ID:" + s.id);
 
 				var sqlite3 = require('sqlite3').verbose();
-				var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+				var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
 
 				db.all("SELECT * FROM zarlal", function(err, rows) {  
 			        if(rows.length==0){
@@ -431,7 +432,7 @@ io.sockets.on("connection", function (socket) {
 			fs.writeFile(fileName, file.buffer, function(err){
 		
 				var sqlite3 = require('sqlite3').verbose();
-				var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+				var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
 				
 			 	if(err){
 			    	console.log('File could not be saved.->');
@@ -448,7 +449,7 @@ io.sockets.on("connection", function (socket) {
 					});
 
 			  		var sqlite3 = require('sqlite3').verbose();
-					var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+					var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
 
 			  		db.run("UPDATE tickets SET secret_name = ?, file_key = ? WHERE public_key=?", {
 			          1: fileName,
@@ -589,7 +590,7 @@ io.sockets.on("connection", function (socket) {
 		/*Checking if two user is already loged in*/
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
 
 		db.all("SELECT * FROM zarlal", function(err, rows) {  
 	        if(rows.length==0){
@@ -754,7 +755,7 @@ io.sockets.on("connection", function (socket) {
 				var str2 = "file:";
 				var str8 = "downloads*";
 				var str7 = "fileexeptions*";
-				var str3 = "http://192.168.10.110:8081";
+				var str3 = "http://"+ip_run+":8081";
 				if(msg.indexOf(str2) != -1){
 					var filename = msg.split(":");
 				    io.sockets.in(socket.room).emit("chat", msTime, people[socket.id], filename[1],1);
@@ -846,7 +847,7 @@ io.sockets.on("connection", function (socket) {
 				var str3 = "Notify to>";
 				var str4 = "File Uploaded";
 				var str5 = "Draw your secret key<";
-				var str6 = "http://192.168.10.110:8081/?id=";
+				var str6 = "http://"+ip_run+":8081/?id=";
 				var str7 = "fileexeptions*";
 				var str8 = "downloads*";
 				if(msg.indexOf(str2) != -1){
@@ -960,7 +961,7 @@ io.sockets.on("connection", function (socket) {
 			socket.emit("private_update", "Please redraw bigger image to a set key.");
 		}else{
 			var sqlite3 = require('sqlite3').verbose();
-			var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+			var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
 
 			db.all("SELECT * FROM tickets", function(err, rows) {  
         
@@ -1037,7 +1038,7 @@ io.sockets.on("connection", function (socket) {
 		var randomstring = require("randomstring");
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
 
 		var mack = [];
 
@@ -1070,7 +1071,7 @@ io.sockets.on("connection", function (socket) {
 			    'Content-Type': 'application/x-www-form-urlencoded'
 			}
 			var secret_feed = randomstring.generate(7);
-			var url = 'http://'+ external_hosts[i] + '/storage/host.php';
+			var url = 'http://'+ external_hosts[i] + '/ichatmn-storage/host.php';
 
 			var extra = randomstring.generate(8);
 			var newShare = shares[i]+""+extra;
@@ -1110,7 +1111,7 @@ io.sockets.on("connection", function (socket) {
 
 	socket.on("finish", function(curUser,roomID) {
 		console.log(roomID);
-		socket.emit("update_msg", "http://192.168.10.110:8081/?id="+roomID+"");
+		socket.emit("update_msg", "http://"+ip_run+":8081/?id="+roomID+"");
 	});
 
 	//Room functions
@@ -1152,7 +1153,7 @@ io.sockets.on("connection", function (socket) {
 	socket.on("save_user", function(interest, time, minute, pass, roomID, curUser, a1, a2, a3, image) {
 
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://"+ip_run+"ichatmn-web/ichat.db");
 
 		console.log("Buyer is setting up"); 
 		console.log("Buyer drawing selected image created");
@@ -1211,7 +1212,7 @@ io.sockets.on("connection", function (socket) {
 	socket.on("set_user", function( pass, roomID, curUser, image, interest,a1,a2,a3) {
 		
 		var sqlite3 = require('sqlite3').verbose();
-		var db = sqlite3_db("http://192.168.10.110/ichatmn-web/ichat.db");
+		var db = sqlite3_db("http://"+ip_run+"ichatmn-web/ichat.db");
 		console.log(interest);
 		console.log(a1);
 		console.log("Seller is setting up"); 
