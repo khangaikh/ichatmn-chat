@@ -15,7 +15,7 @@ var multer  = require('multer');
 var done=false;
 var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 
-var ip_run = "192.168.10.107"; //127.0.0.1
+var ip_run = "192.168.10.124"; //127.0.0.1
 var external_hosts = ['127.0.0.1', '192.168.10.124','192.168.10.100'];
 var num_hosts = 3;
 var kds_server = ip_run;
