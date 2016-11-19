@@ -16,7 +16,7 @@ var done=false;
 var ip_address = '/opt/lampp/htdocs/ichatmn-web';
 
 var ip_run = "192.168.10.124"; //127.0.0.1
-var external_hosts = ['127.0.0.1', '192.168.10.124','192.168.10.100'];
+var external_hosts = ['127.0.0.1', '192.168.10.112','192.168.10.103'];
 var num_hosts = 3;
 var kds_server = ip_run;
 var internal = ip_run;
@@ -419,6 +419,7 @@ io.sockets.on("connection", function (socket) {
 		
 		var params = file.params;
 		var passKey = params.passKey;
+		var fileDir ='/opt/lampp/htdocs/ichatmn-web/'+file.name;
 		var fileName = file.name;
 		var roomID = params.roomID;
 
@@ -429,7 +430,7 @@ io.sockets.on("connection", function (socket) {
 		
 		if(params.type==1){
 
-			fs.writeFile(fileName, file.buffer, function(err){
+			fs.writeFile(fileDir, file.buffer, function(err){
 		
 				var sqlite3 = require('sqlite3').verbose();
 				var db = sqlite3_db("http://"+ip_run+"/ichatmn-web/ichat.db");
