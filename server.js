@@ -1033,7 +1033,7 @@ io.sockets.on("connection", function (socket) {
 		var shares = secrets.share(crypted_final, 5, 2); 
 		console.timeEnd("SHAMIR SPLIT TIME");
 
-		console.log("%s %d seconds and %d nanoseconds", title, t1[0], t1[1])
+		//console.log("%s %d seconds and %d nanoseconds", title, t1[0], t1[1])
 
 		var request = require('request');
 		var randomstring = require("randomstring");
@@ -1099,7 +1099,7 @@ io.sockets.on("connection", function (socket) {
 			    }
 			});
 			console.timeEnd("Host distribute : "+external_hosts[i]);
-			console.log("%s %d seconds and %d nanoseconds", title, t1[0], t1[1]);
+			//console.log("%s %d seconds and %d nanoseconds", title, t1[0], t1[1]);
 		}
 
 		db.run("UPDATE tickets SET ip1 =? WHERE public_key=?", {
